@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">YGOLP</string>
+    <integer name="lp">8000</integer>
+</resources>
