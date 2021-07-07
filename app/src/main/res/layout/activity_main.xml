@@ -4,33 +4,43 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/dark_grey"
+    android:background="@drawable/lp_background"
     android:padding="@dimen/box_inset_layout_padding"
     tools:context=".MainActivity"
     tools:deviceIds="wear"
     tools:ignore="MissingPrefix">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/frameLayout"
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:boxedEdges="all">
+        app:boxedEdges="all"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5">
 
         <TextView
             android:id="@+id/text"
             style="@style/LpText"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="0dp"
-            android:layout_marginTop="0dp"
-            android:text="@integer/lp"
-            android:textAlignment="center"
-            android:autoSizeTextType="uniform"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="0dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.5"
+            android:text="@integer/lp"
+            android:textAlignment="center"
+            android:autoSizeTextType="uniform"
+            android:autoSizeMinTextSize="12sp"
+            android:autoSizeMaxTextSize="32sp"
+            android:autoSizeStepGranularity="2sp" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.wear.widget.BoxInsetLayout>
