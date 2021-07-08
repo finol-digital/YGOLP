@@ -4,14 +4,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/lp_background"
+    android:background="@drawable/lifepoints_background"
     android:padding="@dimen/box_inset_layout_padding"
     tools:context=".MainActivity"
     tools:deviceIds="wear"
     tools:ignore="MissingPrefix">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:boxedEdges="all"
@@ -23,8 +22,8 @@
         app:layout_constraintVertical_bias="0.5">
 
         <TextView
-            android:id="@+id/lpTextView"
-            style="@style/LpText"
+            android:id="@+id/textView"
+            style="@style/LifePointsText"
             android:layout_width="match_parent"
             android:layout_height="32dp"
             android:layout_marginTop="0dp"

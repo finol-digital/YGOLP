@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="LpText" parent="@android:style/TextAppearance">
+    <style name="LifePointsText" parent="@android:style/TextAppearance">
         <item name="android:textColor">#fbff0c</item>
         <item name="android:fontFamily">@font/nationalyze_alp</item>
     </style>

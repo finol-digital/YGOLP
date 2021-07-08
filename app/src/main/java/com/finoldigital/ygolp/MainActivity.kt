@@ -8,11 +8,17 @@ import android.widget.TextView
 
 class MainActivity : WearableActivity() {
 
-    private var lpTextView: TextView? = null
+    private val lifePointsKey: String = "lifePointsKey"
 
-    private var lpStart : MediaPlayer? = null
-    private var lpChange : MediaPlayer? = null
-    private var timeToDuel : MediaPlayer? = null
+    private val defaultLifePoints = 8000
+
+    private var lifePoints: Int = 0
+
+    private lateinit var textView: TextView
+
+    private var duelStartMP: MediaPlayer? = null
+    private var lifePointsChangeMP: MediaPlayer? = null
+    private var itsTimeToDuelMP: MediaPlayer? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -21,40 +27,58 @@ class MainActivity : WearableActivity() {
         // Enables Always-on
         setAmbientEnabled()
 
-        lpTextView = findViewById(R.id.lpTextView)
+        // This is the earliest we can initialize the text view
+        textView = findViewById(R.id.textView)
 
-        restart()
+        // Restore state now instead of onRestoreInstanceState
+        if (savedInstanceState == null)
+            restart()
+        else
+            changeLifePoints(savedInstanceState.getInt(lifePointsKey))
+    }
+
+    override fun onSaveInstanceState(outState: Bundle?) {
+        outState?.run {
+            putInt(lifePointsKey, lifePoints)
+        }
+        if (outState != null)
+            super.onSaveInstanceState(outState)
     }
 
     private fun restart() {
-        if (lpStart == null) {
-            lpStart = MediaPlayer.create(this, R.raw.lp_start)
-            lpStart?.setOnCompletionListener {
-                stopLpStart()
-                changeLp(8000)
+        lifePoints = 0
+        if (duelStartMP == null) {
+            duelStartMP = MediaPlayer.create(this, R.raw.duel_start)
+            duelStartMP?.setOnCompletionListener {
+                stopDuelStart()
+                changeLifePoints(defaultLifePoints)
             }
         }
-        lpStart?.start()
+        duelStartMP?.start()
     }
 
     // TODO: PRESS TO SWITCH TO CALCULATOR ACTIVITY
-    private fun changeLp(lp: Int) {
-        lpTextView?.text = lp.toString()
+    private fun changeLifePoints(lp: Int) {
+        if (lifePoints == lp)
+            return
+
+        lifePoints = lp
+        textView.text = lifePoints.toString()
         // TODO: ANIMATE THE TEXT CHANGE
-        if (lpChange == null) {
-            lpChange = MediaPlayer.create(this, R.raw.lp_change)
-            lpChange?.setOnCompletionListener {
-                stopLpChange()
+        if (lifePointsChangeMP == null) {
+            lifePointsChangeMP = MediaPlayer.create(this, R.raw.lifepoints_change)
+            lifePointsChangeMP?.setOnCompletionListener {
+                stopLifePointsChange()
             }
         }
-        lpChange?.start()
+        lifePointsChangeMP?.start()
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         return if (event.repeatCount == 0) {
             when (keyCode) {
                 KeyEvent.KEYCODE_STEM_1 -> {
-                    startTimeToDuel()
+                    startItsTimeToDuel()
                     true
                 }
                 KeyEvent.KEYCODE_STEM_2 -> {
@@ -70,41 +94,41 @@ class MainActivity : WearableActivity() {
         }
     }
 
-    private fun startTimeToDuel() {
-        if (timeToDuel == null) {
-            timeToDuel = MediaPlayer.create(this, R.raw.its_time_to_duel)
-            timeToDuel?.setOnCompletionListener {
-                stopTimeToDuel()
+    private fun startItsTimeToDuel() {
+        if (itsTimeToDuelMP == null) {
+            itsTimeToDuelMP = MediaPlayer.create(this, R.raw.its_time_to_duel)
+            itsTimeToDuelMP?.setOnCompletionListener {
+                stopItsTimeToDuel()
             }
         }
-        timeToDuel?.start()
+        itsTimeToDuelMP?.start()
     }
 
     override fun onStop() {
-        stopLpStart()
-        stopLpChange()
-        stopTimeToDuel()
+        stopDuelStart()
+        stopLifePointsChange()
+        stopItsTimeToDuel()
         super.onStop()
     }
 
-    private fun stopLpStart() {
-        if (lpStart != null) {
-            lpStart?.release()
-            lpStart = null
+    private fun stopDuelStart() {
+        if (duelStartMP != null) {
+            duelStartMP?.release()
+            duelStartMP = null
         }
     }
 
-    private fun stopLpChange() {
-        if (lpChange != null) {
-            lpChange?.release()
-            lpChange = null
+    private fun stopLifePointsChange() {
+        if (lifePointsChangeMP != null) {
+            lifePointsChangeMP?.release()
+            lifePointsChangeMP = null
         }
     }
 
-    private fun stopTimeToDuel() {
-        if (timeToDuel != null) {
-            timeToDuel?.release()
-            timeToDuel = null
+    private fun stopItsTimeToDuel() {
+        if (itsTimeToDuelMP != null) {
+            itsTimeToDuelMP?.release()
+            itsTimeToDuelMP = null
         }
     }
 
