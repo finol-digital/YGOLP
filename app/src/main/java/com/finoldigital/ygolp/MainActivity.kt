@@ -4,8 +4,11 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.support.wearable.activity.WearableActivity
 import android.view.KeyEvent
+import android.widget.TextView
 
 class MainActivity : WearableActivity() {
+
+    private var lpTextView: TextView? = null
 
     private var lpStart : MediaPlayer? = null
     private var lpChange : MediaPlayer? = null
@@ -17,6 +20,8 @@ class MainActivity : WearableActivity() {
 
         // Enables Always-on
         setAmbientEnabled()
+
+        lpTextView = findViewById(R.id.lpTextView)
 
         restart()
     }
@@ -32,8 +37,10 @@ class MainActivity : WearableActivity() {
         lpStart?.start()
     }
 
+    // TODO: PRESS TO SWITCH TO CALCULATOR ACTIVITY
     private fun changeLp(lp: Int) {
-        // TODO: UPDATE TEXT
+        lpTextView?.text = lp.toString()
+        // TODO: ANIMATE THE TEXT CHANGE
         if (lpChange == null) {
             lpChange = MediaPlayer.create(this, R.raw.lp_change)
             lpChange?.setOnCompletionListener {

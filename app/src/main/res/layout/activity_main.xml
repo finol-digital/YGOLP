@@ -23,24 +23,24 @@
         app:layout_constraintVertical_bias="0.5">
 
         <TextView
-            android:id="@+id/text"
+            android:id="@+id/lpTextView"
             style="@style/LpText"
             android:layout_width="match_parent"
-            android:layout_height="64dp"
-            android:layout_marginTop="30dp"
+            android:layout_height="32dp"
+            android:layout_marginTop="0dp"
             android:layout_marginBottom="0dp"
+            android:autoSizeMaxTextSize="32sp"
+            android:autoSizeMinTextSize="12sp"
+            android:autoSizeStepGranularity="2sp"
+            android:autoSizeTextType="uniform"
+            android:text="@string/app_name"
+            android:textAlignment="center"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.5"
-            android:text="@integer/lp"
-            android:textAlignment="center"
-            android:autoSizeTextType="uniform"
-            android:autoSizeMinTextSize="12sp"
-            android:autoSizeMaxTextSize="32sp"
-            android:autoSizeStepGranularity="2sp" />
+            app:layout_constraintVertical_bias="0.5" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.wear.widget.BoxInsetLayout>
