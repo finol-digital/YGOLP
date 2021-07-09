@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/lifepoints_background"
     android:padding="@dimen/box_inset_layout_padding"
+    android:id="@+id/boxInsetLayout"
     tools:context=".MainActivity"
     tools:deviceIds="wear"
     tools:ignore="MissingPrefix">

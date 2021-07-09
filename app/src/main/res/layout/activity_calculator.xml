@@ -5,7 +5,6 @@
     android:id="@+id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/grey"
     android:padding="@dimen/box_inset_layout_padding"
     tools:context=".CalculatorActivity"
     tools:deviceIds="wear"
@@ -19,7 +18,7 @@
             android:id="@+id/operand"
             android:layout_width="match_parent"
             android:layout_height="16dp"
-            android:text="@string/app_name"
+            android:text=""
             android:textAlignment="center"
             android:textColor="@color/black"
             android:textSize="12sp"
@@ -155,11 +154,11 @@
                     android:textSize="12sp" />
 
                 <Button
-                    android:id="@+id/button00"
+                    android:id="@+id/buttonY"
                     style="?android:attr/buttonBarButtonStyle"
                     android:layout_width="48dp"
                     android:layout_height="36dp"
-                    android:text="@string/zero2"
+                    android:text="@string/y"
                     android:textColor="@color/black"
                     android:textSize="12sp" />
             </TableRow>

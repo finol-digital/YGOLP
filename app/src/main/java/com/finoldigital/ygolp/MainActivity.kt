@@ -1,16 +1,22 @@
 package com.finoldigital.ygolp
 
+import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.support.wearable.activity.WearableActivity
 import android.view.KeyEvent
+import android.view.MotionEvent
+import android.view.View
 import android.widget.TextView
+import androidx.wear.widget.BoxInsetLayout
 
-class MainActivity : WearableActivity() {
+const val EXTRA_YGOLP = "com.finoldigital.ygolp.EXTRA_YGOLP"
 
-    private val lifePointsKey: String = "lifePointsKey"
+const val LIFE_POINTS_KEY: String = "LIFE_POINTS_KEY"
 
-    private val defaultLifePoints = 8000
+const val DEFAULT_LIFE_POINTS = 8000
+
+class MainActivity : WearableActivity(), View.OnTouchListener {
 
     private var lifePoints: Int = 0
 
@@ -30,16 +36,20 @@ class MainActivity : WearableActivity() {
         // This is the earliest we can initialize the text view
         textView = findViewById(R.id.textView)
 
+        // Use this to detect touch
+        val boxInsetLayout: BoxInsetLayout = findViewById(R.id.boxInsetLayout)
+        boxInsetLayout.setOnTouchListener(this)
+
         // Restore state now instead of onRestoreInstanceState
         if (savedInstanceState == null)
             restart()
         else
-            changeLifePoints(savedInstanceState.getInt(lifePointsKey))
+            setLifePoints(savedInstanceState.getInt(LIFE_POINTS_KEY))
     }
 
     override fun onSaveInstanceState(outState: Bundle?) {
         outState?.run {
-            putInt(lifePointsKey, lifePoints)
+            putInt(LIFE_POINTS_KEY, lifePoints)
         }
         if (outState != null)
             super.onSaveInstanceState(outState)
@@ -47,31 +57,45 @@ class MainActivity : WearableActivity() {
 
     private fun restart() {
         lifePoints = 0
+        // TODO: ANIMATION DURING DUEL START
+        textView.text = lifePoints.toString()
         if (duelStartMP == null) {
             duelStartMP = MediaPlayer.create(this, R.raw.duel_start)
             duelStartMP?.setOnCompletionListener {
                 stopDuelStart()
-                changeLifePoints(defaultLifePoints)
+                setLifePoints(DEFAULT_LIFE_POINTS)
             }
         }
         duelStartMP?.start()
     }
 
-    // TODO: PRESS TO SWITCH TO CALCULATOR ACTIVITY
-    private fun changeLifePoints(lp: Int) {
-        if (lifePoints == lp)
-            return
-
-        lifePoints = lp
-        textView.text = lifePoints.toString()
-        // TODO: ANIMATE THE TEXT CHANGE
-        if (lifePointsChangeMP == null) {
-            lifePointsChangeMP = MediaPlayer.create(this, R.raw.lifepoints_change)
-            lifePointsChangeMP?.setOnCompletionListener {
-                stopLifePointsChange()
+    private fun setLifePoints(lp: Int) {
+        if (lifePoints != lp) {
+            lifePoints = lp
+            if (lifePointsChangeMP == null) {
+                lifePointsChangeMP = MediaPlayer.create(this, R.raw.lifepoints_change)
+                lifePointsChangeMP?.setOnCompletionListener {
+                    stopLifePointsChange()
+                }
             }
+            lifePointsChangeMP?.start()
         }
-        lifePointsChangeMP?.start()
+
+        // TODO: ANIMATE THE LIFEPOINTS CHANGE
+        textView.text = lifePoints.toString()
+    }
+
+    override fun onTouch(view: View?, event: MotionEvent?): Boolean {
+        if (event?.action == MotionEvent.ACTION_UP) {
+            view?.performClick()
+            val halfHeight = resources.displayMetrics.heightPixels / 2
+            val intent = Intent(this, CalculatorActivity::class.java).apply {
+                putExtra(EXTRA_YGOLP, lifePoints)
+                putExtra(EXTRA_ADD, event.rawY < halfHeight)
+            }
+            startActivityForResult(intent, CHANGE_LIFE_POINTS)
+        }
+        return true
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -130,6 +154,19 @@ class MainActivity : WearableActivity() {
             itsTimeToDuelMP?.release()
             itsTimeToDuelMP = null
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
+        when (requestCode) {
+            CHANGE_LIFE_POINTS ->
+                if (resultCode == RESULT_OK) {
+                    intent?.getIntExtra(EXTRA_YGOLP, DEFAULT_LIFE_POINTS)?.let { setLifePoints(it) }
+                }
+        }
+    }
+
+    companion object {
+        internal const val CHANGE_LIFE_POINTS = 0
     }
 
 }
