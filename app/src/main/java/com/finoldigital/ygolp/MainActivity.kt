@@ -86,6 +86,7 @@ class MainActivity : WearableActivity(), View.OnTouchListener {
                     val max = 9999
                     textView.text = (Random().nextInt(max - min + 1) + min).toString()
                 }
+
                 override fun onFinish() {
                     textView.text = lifePoints.toString()
                 }
@@ -100,8 +101,13 @@ class MainActivity : WearableActivity(), View.OnTouchListener {
             val height = resources.displayMetrics.heightPixels
             val intent = Intent(this, CalculatorActivity::class.java).apply {
                 putExtra(EXTRA_YGOLP, lifePoints)
-                // TODO: height
-                putExtra(EXTRA_CALC_MODE, 0)
+                var mode = 2
+                val y = event.rawY
+                if (y > height / 3)
+                    mode = 0
+                if (y > height / 3 * 2)
+                    mode = 1
+                putExtra(EXTRA_CALC_MODE, mode)
             }
             startActivityForResult(intent, CHANGE_LIFE_POINTS)
         }

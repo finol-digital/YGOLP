@@ -1,5 +1,6 @@
 package com.finoldigital.ygolp
 
+import android.graphics.Color
 import android.os.Bundle
 import android.support.wearable.activity.WearableActivity
 import android.view.KeyEvent
@@ -11,8 +12,9 @@ const val EXTRA_CALC_MODE = "com.finoldigital.ygolp.EXTRA_CALC_MODE"
 class CalculatorActivity : WearableActivity() {
 
     private var ygolp: Int = DEFAULT_LIFE_POINTS
-    private var mode: Int = 0 // 0:-> 1:- 2:+
+    private var mode: Int = 0 // 0:=> 1:- 2:+
 
+    private lateinit var operator: Button
     private lateinit var operand: TextView
     private var text: String = "0"
 
@@ -22,6 +24,8 @@ class CalculatorActivity : WearableActivity() {
 
         ygolp = intent.getIntExtra(EXTRA_YGOLP, DEFAULT_LIFE_POINTS)
         mode = intent.getIntExtra(EXTRA_CALC_MODE, 0)
+
+        operator = findViewById(R.id.buttonMode)
 
         operand = findViewById(R.id.operand)
         operand.text = text
@@ -39,7 +43,6 @@ class CalculatorActivity : WearableActivity() {
         val button00: Button = findViewById(R.id.button00)
         val button000: Button = findViewById(R.id.button000)
 
-        val buttonMode: Button = findViewById(R.id.buttonMode)
         val buttonC: Button = findViewById(R.id.buttonC)
         val buttonX: Button = findViewById(R.id.buttonX)
         val buttonEquals: Button = findViewById(R.id.buttonEquals)
@@ -59,30 +62,52 @@ class CalculatorActivity : WearableActivity() {
         button00.setOnClickListener { append("00") }
         button000.setOnClickListener { append("000") }
 
-        buttonMode.setOnClickListener { nextMode(); applyMode() }
+        operator.setOnClickListener { nextMode() }
         buttonC.setOnClickListener { pop() }
         buttonX.setOnClickListener { setResult(RESULT_OK, intent); finish() }
         buttonEquals.setOnClickListener { submit() }
     }
 
     private fun nextMode() {
-        TODO("Not yet implemented")
+        mode++
+        if (mode > 2)
+            mode = 0
+        applyMode()
     }
 
     private fun applyMode() {
-        TODO("Not yet implemented")
+        when(mode) {
+            2 ->  {
+                operator.text = "+"
+                operator.setTextColor(Color.GREEN)
+                operand.setTextColor(Color.GREEN)
+            }
+            1 ->  {
+                operator.text = "-"
+                operator.setTextColor(Color.RED)
+                operand.setTextColor(Color.RED)
+            }
+            0 ->  {
+                operator.text = "=>"
+                operator.setTextColor(Color.YELLOW)
+                operand.setTextColor(Color.YELLOW)
+            }
+        }
     }
 
     private fun append(char: String) {
-        // TODO: HANDLE THIS
-        if (text.startsWith("0"))
-            text = text.subSequence(text.lastIndexOf('0'), text.length).toString()
+        text = text.trimStart('0')
         text += char
+        if (text.toInt() == 0)
+            text = "0"
         operand.text = text
     }
 
     private fun pop() {
-        TODO("Not yet implemented")
+        text = text.substring(0, text.length - 1)
+        if (text.isEmpty())
+            text = "0"
+        operand.text = text
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {

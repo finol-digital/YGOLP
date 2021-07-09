@@ -12,7 +12,7 @@
     <string name="zero">0</string>
     <string name="zero2">00</string>
     <string name="zero3">000</string>
-    <string name="mode">-></string>
+    <string name="mode">=></string>
     <string name="c">C</string>
     <string name="x">X</string>
     <string name="equals">=</string>
