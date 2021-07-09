@@ -97,10 +97,11 @@ class MainActivity : WearableActivity(), View.OnTouchListener {
     override fun onTouch(view: View?, event: MotionEvent?): Boolean {
         if (event?.action == MotionEvent.ACTION_UP) {
             view?.performClick()
-            val halfHeight = resources.displayMetrics.heightPixels / 2
+            val height = resources.displayMetrics.heightPixels
             val intent = Intent(this, CalculatorActivity::class.java).apply {
                 putExtra(EXTRA_YGOLP, lifePoints)
-                putExtra(EXTRA_ADD, event.rawY < halfHeight)
+                // TODO: height
+                putExtra(EXTRA_CALC_MODE, 0)
             }
             startActivityForResult(intent, CHANGE_LIFE_POINTS)
         }

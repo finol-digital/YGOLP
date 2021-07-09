@@ -1,19 +1,17 @@
 package com.finoldigital.ygolp
 
-import android.graphics.Color
 import android.os.Bundle
 import android.support.wearable.activity.WearableActivity
 import android.view.KeyEvent
 import android.widget.Button
 import android.widget.TextView
-import androidx.wear.widget.BoxInsetLayout
 
-const val EXTRA_ADD = "com.finoldigital.ygolp.EXTRA_ADD"
+const val EXTRA_CALC_MODE = "com.finoldigital.ygolp.EXTRA_CALC_MODE"
 
 class CalculatorActivity : WearableActivity() {
 
     private var ygolp: Int = DEFAULT_LIFE_POINTS
-    private var add: Boolean = false
+    private var mode: Int = 0
 
     private lateinit var operand: TextView
     private var text: String = "0"
@@ -23,13 +21,10 @@ class CalculatorActivity : WearableActivity() {
         setContentView(R.layout.activity_calculator)
 
         ygolp = intent.getIntExtra(EXTRA_YGOLP, DEFAULT_LIFE_POINTS)
-        add = intent.getBooleanExtra(EXTRA_ADD, false)
+        mode = intent.getIntExtra(EXTRA_CALC_MODE, 0)
 
         operand = findViewById(R.id.operand)
         operand.text = text
-
-        val background: BoxInsetLayout = findViewById(R.id.background)
-        background.setBackgroundColor(if (add) Color.GREEN else Color.YELLOW)
 
         val button1: Button = findViewById(R.id.button1)
         val button2: Button = findViewById(R.id.button2)
@@ -40,9 +35,16 @@ class CalculatorActivity : WearableActivity() {
         val button7: Button = findViewById(R.id.button7)
         val button8: Button = findViewById(R.id.button8)
         val button9: Button = findViewById(R.id.button9)
-        val buttonX: Button = findViewById(R.id.buttonX)
         val button0: Button = findViewById(R.id.button0)
-        val buttonY: Button = findViewById(R.id.buttonY)
+        val button00: Button = findViewById(R.id.button00)
+        val button000: Button = findViewById(R.id.button000)
+
+        val buttonMode: Button = findViewById(R.id.buttonMode)
+        val buttonC: Button = findViewById(R.id.buttonC)
+        val buttonX: Button = findViewById(R.id.buttonX)
+        val buttonEquals: Button = findViewById(R.id.buttonEquals)
+
+        setMode(mode)
 
         button1.setOnClickListener { append("1") }
         button2.setOnClickListener { append("2") }
@@ -54,30 +56,38 @@ class CalculatorActivity : WearableActivity() {
         button8.setOnClickListener { append("8") }
         button9.setOnClickListener { append("9") }
         button0.setOnClickListener { append("0") }
+        button00.setOnClickListener { append("00") }
+        button000.setOnClickListener { append("000") }
+
+        buttonMode.setOnClickListener { setMode(mode + 1) }
+        buttonC.setOnClickListener { pop() }
         buttonX.setOnClickListener { setResult(RESULT_OK, intent); finish() }
-        buttonY.setOnClickListener {
-            val input = text.toInt()
-            intent.apply { putExtra(EXTRA_YGOLP, if (add) (ygolp + input) else (ygolp - input)) }
-            setResult(RESULT_OK, intent)
-            finish()
-        }
+        buttonEquals.setOnClickListener { submit() }
+    }
+
+    private fun setMode(i: Int) {
+        mode = i
+        //if (i )
+        TODO("Not yet implemented")
     }
 
     private fun append(char: String) {
-        if("0" == text)
-            text = ""
+        // TODO: HANDLE THIS
+        if (text.startsWith("0"))
+            text = text.subSequence(text.lastIndexOf('0'), text.length).toString()
         text += char
         operand.text = text
+    }
+
+    private fun pop() {
+        TODO("Not yet implemented")
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         return if (event.repeatCount == 0) {
             when (keyCode) {
                 KeyEvent.KEYCODE_STEM_1 -> {
-                    val input = text.toInt()
-                    intent.apply { putExtra(EXTRA_YGOLP, if (add) (ygolp + input) else (ygolp - input)) }
-                    setResult(RESULT_OK, intent)
-                    finish()
+                    submit()
                     true
                 }
                 KeyEvent.KEYCODE_STEM_2 -> {
@@ -91,6 +101,21 @@ class CalculatorActivity : WearableActivity() {
         } else {
             super.onKeyDown(keyCode, event)
         }
+    }
+
+    private fun submit() {
+        val input = text.toInt()
+        intent.apply {
+            var result = ygolp
+            when (mode) {
+                0 -> result = input
+                1 -> result = ygolp - input
+                2 -> result = ygolp + input
+            }
+            putExtra(EXTRA_YGOLP, result)
+        }
+        setResult(RESULT_OK, intent)
+        finish()
     }
 
 }
