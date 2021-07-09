@@ -3,12 +3,14 @@ package com.finoldigital.ygolp
 import android.content.Intent
 import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.support.wearable.activity.WearableActivity
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
 import android.widget.TextView
 import androidx.wear.widget.BoxInsetLayout
+import java.util.*
 
 const val EXTRA_YGOLP = "com.finoldigital.ygolp.EXTRA_YGOLP"
 
@@ -57,7 +59,6 @@ class MainActivity : WearableActivity(), View.OnTouchListener {
 
     private fun restart() {
         lifePoints = 0
-        // TODO: ANIMATION DURING DUEL START
         textView.text = lifePoints.toString()
         if (duelStartMP == null) {
             duelStartMP = MediaPlayer.create(this, R.raw.duel_start)
@@ -79,9 +80,17 @@ class MainActivity : WearableActivity(), View.OnTouchListener {
                 }
             }
             lifePointsChangeMP?.start()
+            object : CountDownTimer(2100, 50) {
+                override fun onTick(millisUntilFinished: Long) {
+                    val min = 1000
+                    val max = 9999
+                    textView.text = (Random().nextInt(max - min + 1) + min).toString()
+                }
+                override fun onFinish() {
+                    textView.text = lifePoints.toString()
+                }
+            }.start()
         }
-
-        // TODO: ANIMATE THE LIFEPOINTS CHANGE
         textView.text = lifePoints.toString()
     }
 
@@ -102,11 +111,11 @@ class MainActivity : WearableActivity(), View.OnTouchListener {
         return if (event.repeatCount == 0) {
             when (keyCode) {
                 KeyEvent.KEYCODE_STEM_1 -> {
-                    startItsTimeToDuel()
+                    restart()
                     true
                 }
                 KeyEvent.KEYCODE_STEM_2 -> {
-                    restart()
+                    startItsTimeToDuel()
                     true
                 }
                 else -> {

@@ -3,6 +3,7 @@ package com.finoldigital.ygolp
 import android.graphics.Color
 import android.os.Bundle
 import android.support.wearable.activity.WearableActivity
+import android.view.KeyEvent
 import android.widget.Button
 import android.widget.TextView
 import androidx.wear.widget.BoxInsetLayout
@@ -15,7 +16,7 @@ class CalculatorActivity : WearableActivity() {
     private var add: Boolean = false
 
     private lateinit var operand: TextView
-    private var s: String = ""
+    private var text: String = "0"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -25,9 +26,10 @@ class CalculatorActivity : WearableActivity() {
         add = intent.getBooleanExtra(EXTRA_ADD, false)
 
         operand = findViewById(R.id.operand)
+        operand.text = text
 
         val background: BoxInsetLayout = findViewById(R.id.background)
-        background.setBackgroundColor(if (add) Color.GREEN else Color.RED)
+        background.setBackgroundColor(if (add) Color.GREEN else Color.YELLOW)
 
         val button1: Button = findViewById(R.id.button1)
         val button2: Button = findViewById(R.id.button2)
@@ -42,22 +44,53 @@ class CalculatorActivity : WearableActivity() {
         val button0: Button = findViewById(R.id.button0)
         val buttonY: Button = findViewById(R.id.buttonY)
 
-        button1.setOnClickListener { s += "1"; operand.text = s }
-        button2.setOnClickListener { s += "2"; operand.text = s }
-        button3.setOnClickListener { s += "3"; operand.text = s }
-        button4.setOnClickListener { s += "4"; operand.text = s }
-        button5.setOnClickListener { s += "5"; operand.text = s }
-        button6.setOnClickListener { s += "6"; operand.text = s }
-        button7.setOnClickListener { s += "7"; operand.text = s }
-        button8.setOnClickListener { s += "8"; operand.text = s }
-        button9.setOnClickListener { s += "9"; operand.text = s }
+        button1.setOnClickListener { append("1") }
+        button2.setOnClickListener { append("2") }
+        button3.setOnClickListener { append("3") }
+        button4.setOnClickListener { append("4") }
+        button5.setOnClickListener { append("5") }
+        button6.setOnClickListener { append("6") }
+        button7.setOnClickListener { append("7") }
+        button8.setOnClickListener { append("8") }
+        button9.setOnClickListener { append("9") }
+        button0.setOnClickListener { append("0") }
         buttonX.setOnClickListener { setResult(RESULT_OK, intent); finish() }
-        button0.setOnClickListener { s += "0"; operand.text = s }
         buttonY.setOnClickListener {
-            val input = s.toInt()
+            val input = text.toInt()
             intent.apply { putExtra(EXTRA_YGOLP, if (add) (ygolp + input) else (ygolp - input)) }
             setResult(RESULT_OK, intent)
             finish()
         }
     }
+
+    private fun append(char: String) {
+        if("0" == text)
+            text = ""
+        text += char
+        operand.text = text
+    }
+
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        return if (event.repeatCount == 0) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_STEM_1 -> {
+                    val input = text.toInt()
+                    intent.apply { putExtra(EXTRA_YGOLP, if (add) (ygolp + input) else (ygolp - input)) }
+                    setResult(RESULT_OK, intent)
+                    finish()
+                    true
+                }
+                KeyEvent.KEYCODE_STEM_2 -> {
+                    setResult(RESULT_OK, intent); finish()
+                    true
+                }
+                else -> {
+                    super.onKeyDown(keyCode, event)
+                }
+            }
+        } else {
+            super.onKeyDown(keyCode, event)
+        }
+    }
+
 }
