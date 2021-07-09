@@ -11,7 +11,7 @@ const val EXTRA_CALC_MODE = "com.finoldigital.ygolp.EXTRA_CALC_MODE"
 class CalculatorActivity : WearableActivity() {
 
     private var ygolp: Int = DEFAULT_LIFE_POINTS
-    private var mode: Int = 0
+    private var mode: Int = 0 // 0:-> 1:- 2:+
 
     private lateinit var operand: TextView
     private var text: String = "0"
@@ -44,7 +44,7 @@ class CalculatorActivity : WearableActivity() {
         val buttonX: Button = findViewById(R.id.buttonX)
         val buttonEquals: Button = findViewById(R.id.buttonEquals)
 
-        setMode(mode)
+        applyMode()
 
         button1.setOnClickListener { append("1") }
         button2.setOnClickListener { append("2") }
@@ -59,15 +59,17 @@ class CalculatorActivity : WearableActivity() {
         button00.setOnClickListener { append("00") }
         button000.setOnClickListener { append("000") }
 
-        buttonMode.setOnClickListener { setMode(mode + 1) }
+        buttonMode.setOnClickListener { nextMode(); applyMode() }
         buttonC.setOnClickListener { pop() }
         buttonX.setOnClickListener { setResult(RESULT_OK, intent); finish() }
         buttonEquals.setOnClickListener { submit() }
     }
 
-    private fun setMode(i: Int) {
-        mode = i
-        //if (i )
+    private fun nextMode() {
+        TODO("Not yet implemented")
+    }
+
+    private fun applyMode() {
         TODO("Not yet implemented")
     }
 
