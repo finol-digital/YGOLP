@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="@dimen/box_inset_layout_padding"
-    android:background="@color/dark_grey"
+    android:background="@color/grey"
     tools:context=".CalculatorActivity"
     tools:deviceIds="wear"
     tools:ignore="MissingPrefix">
