@@ -190,7 +190,9 @@ class MainActivity : ComponentActivity() {
                         LifePointsText(displayedLifePoints) { navController.navigate("calculator") }
                     }
                     composable("calculator") {
-                        CalculatorScreen(lifePoints, 0, {}, {})
+                        CalculatorScreen(lifePoints, 1, { result ->
+                            changeLifePoints(result)
+                        }, {})
                     }
                 }
             }

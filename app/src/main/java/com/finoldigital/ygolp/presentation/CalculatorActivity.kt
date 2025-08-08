@@ -1,6 +1,5 @@
 package com.finoldigital.ygolp.presentation
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -37,7 +35,7 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 
-const val EXTRA_CALC_MODE = "com.finoldigital.ygolp.EXTRA_CALC_MODE"
+const val EXTRA_CALCULATOR_MODE = "com.finoldigital.ygolp.EXTRA_CALCULATOR_MODE"
 
 class CalculatorActivity : ComponentActivity() {
 
@@ -45,20 +43,14 @@ class CalculatorActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         val initialLifePoints = intent.getIntExtra(EXTRA_LIFE_POINTS, STARTING_LIFE_POINTS)
-        val initialMode = intent.getIntExtra(EXTRA_CALC_MODE, 0)
+        val initialCalculatorMode = intent.getIntExtra(EXTRA_CALCULATOR_MODE, 0)
 
         setContent {
             CalculatorScreen(
                 initialLifePoints = initialLifePoints,
-                initialMode = initialMode,
-                onFinish = { resultIntent ->
-                    setResult(RESULT_OK, resultIntent)
-                    finish()
-                },
-                onCancel = {
-                    setResult(RESULT_CANCELED) // Or RESULT_OK based on `buttonX`'''s original intent
-                    finish()
-                }
+                initialCalculatorMode = initialCalculatorMode,
+                onFinish = {},
+                onCancel = {}
             )
         }
     }
@@ -67,21 +59,26 @@ class CalculatorActivity : ComponentActivity() {
 @Composable
 fun CalculatorScreen(
     initialLifePoints: Int,
-    initialMode: Int,
-    onFinish: (Intent) -> Unit,
+    initialCalculatorMode: Int,
+    onFinish: (Int) -> Unit,
     onCancel: () -> Unit
 ) {
-    var lifePoints by remember { mutableIntStateOf(initialLifePoints) }
-    var mode by remember { mutableIntStateOf(initialMode) } // 0:=> 1:- 2:+
-    var operandText by remember { mutableStateOf("0") }
-
-    val focusRequester = remember { FocusRequester() }
-
-    val operatorTextAndColor = remember(mode) {
-        when (mode) {
+    val lifePoints = initialLifePoints
+    var calculatorMode by remember { mutableIntStateOf(initialCalculatorMode) } // 0:=> 1:- 2:+
+    val operatorTextAndColor = remember(calculatorMode) {
+        when (calculatorMode) {
             2 -> "+" to Color.Green
             1 -> "-" to Color.Red
             else -> "=>" to Color.Yellow // 0
+        }
+    }
+    var operandText by remember { mutableStateOf("0") }
+    val result = remember(lifePoints, calculatorMode, operandText) {
+        val operand = operandText.toIntOrNull() ?: 0
+        when (calculatorMode) {
+            2 -> lifePoints + operand
+            1 -> lifePoints - operand
+            else -> operand // 0
         }
     }
 
@@ -98,28 +95,15 @@ fun CalculatorScreen(
     }
 
     fun nextMode() {
-        mode = (mode + 1) % 3
+        calculatorMode = (calculatorMode + 1) % 3
     }
 
     fun submit() {
-        val input = operandText.toIntOrNull() ?: 0
-        val resultIntent = Intent()
-        val resultLp = when (mode) {
-            0 -> input
-            1 -> lifePoints - input
-            2 -> lifePoints + input
-            else -> lifePoints
-        }
-        resultIntent.putExtra(EXTRA_LIFE_POINTS, resultLp)
-        onFinish(resultIntent)
+        onFinish(result)
     }
 
-    // Handle physical button presses using onKeyEvent if preferred for Compose-centric handling
-    // The original onKeyDown logic from Activity is kept for now if specific Activity behavior is needed.
-    // If you want full Compose handling:
-    // LaunchedEffect(Unit) { focusRequester.requestFocus() }
-
-    MaterialTheme { // Assuming you have a Wear Compose Theme
+    val focusRequester = remember { FocusRequester() }
+    MaterialTheme {
         Scaffold(
             modifier = Modifier
                 .focusRequester(focusRequester)
@@ -132,7 +116,7 @@ fun CalculatorScreen(
                             }
 
                             KeyEvent.KEYCODE_STEM_2 -> {
-                                onCancel() // Or a specific action for STEM_2 if it'''s not just cancel
+                                onCancel()
                                 true
                             }
 
@@ -146,74 +130,95 @@ fun CalculatorScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(16.dp),
+                    .padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(4.dp)
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                // Operand Display
+
+                // LifePoints Display
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Button(
-                        onClick = { nextMode() },
-                        colors = ButtonDefaults.buttonColors(
-                            backgroundColor = operatorTextAndColor.second.copy(
-                                alpha = 0.3f
-                            )
-                        )
-                    ) {
-                        Text(text = operatorTextAndColor.first, color = operatorTextAndColor.second)
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = operandText,
-                        fontSize = 24.sp,
-                        color = operatorTextAndColor.second,
-                        textAlign = TextAlign.End,
+                        text = lifePoints.toString(),
+                        fontSize = 20.sp,
+                        color = Color.White,
+                        textAlign = TextAlign.Center,
                         modifier = Modifier.weight(1f)
                     )
                 }
 
-                // Number Buttons
+                // Operator and Operand Display
+                Row(verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    OperatorButton(
+                        text = operatorTextAndColor.first,
+                        modifier = Modifier.weight(1f),
+                        color = operatorTextAndColor.second,
+                        onClick = {nextMode()})
+                    Text(
+                        text = operandText,
+                        fontSize = 20.sp,
+                        color = operatorTextAndColor.second,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.weight(3f)
+                    )
+                }
+
+                // Calculator Buttons
                 val buttonModifier = Modifier.weight(1f)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     CalculatorButton("7", buttonModifier) { append("7") }
                     CalculatorButton("8", buttonModifier) { append("8") }
                     CalculatorButton("9", buttonModifier) { append("9") }
+                    CalculatorButton("C", buttonModifier, color = Color.DarkGray) { pop() }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
                     CalculatorButton("4", buttonModifier) { append("4") }
                     CalculatorButton("5", buttonModifier) { append("5") }
                     CalculatorButton("6", buttonModifier) { append("6") }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    CalculatorButton("1", buttonModifier) { append("1") }
-                    CalculatorButton("2", buttonModifier) { append("2") }
-                    CalculatorButton("3", buttonModifier) { append("3") }
-                }
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    CalculatorButton("0", buttonModifier) { append("0") }
-                    CalculatorButton("00", buttonModifier) { append("00") }
-                    CalculatorButton("000", buttonModifier) { append("000") }
-                }
-
-                // Action Buttons
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    CalculatorButton("C", buttonModifier, color = Color.DarkGray) { pop() }
                     CalculatorButton(
                         "X",
                         buttonModifier,
                         color = MaterialTheme.colors.error
                     ) { onCancel() }
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    CalculatorButton("1", buttonModifier) { append("1") }
+                    CalculatorButton("2", buttonModifier) { append("2") }
+                    CalculatorButton("3", buttonModifier) { append("3") }
                     CalculatorButton(
                         "=",
                         buttonModifier,
                         color = MaterialTheme.colors.primary
                     ) { submit() }
                 }
+                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Spacer(modifier = Modifier.weight(0.5f))
+                    CalculatorButton("0", buttonModifier) { append("0") }
+                    CalculatorButton("00", buttonModifier) { append("00") }
+                    CalculatorButton("000", buttonModifier) { append("000") }
+                    Spacer(modifier = Modifier.weight(0.5f))
+                }
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
                 }
             }
         }
+    }
+}
+
+@Composable
+fun OperatorButton(
+    text: String,
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colors.surface,
+    onClick: () -> Unit
+) {
+    Button(
+        onClick = onClick,
+        modifier = modifier.aspectRatio(1.5f), // Adjust aspect ratio as needed for Wear
+        colors = ButtonDefaults.buttonColors(backgroundColor = color)
+    ) {
+        Text(text)
     }
 }
 
@@ -237,5 +242,5 @@ fun CalculatorButton(
 @WearPreviewFontScales
 @Composable
 fun CalculatorScreenPreview() {
-    CalculatorScreen(STARTING_LIFE_POINTS, 0, onFinish = {}, onCancel = {})
+    CalculatorScreen(STARTING_LIFE_POINTS, 1, onFinish = {}, onCancel = {})
 }
