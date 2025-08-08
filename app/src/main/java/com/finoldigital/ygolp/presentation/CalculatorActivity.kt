@@ -1,25 +1,39 @@
 package com.finoldigital.ygolp.presentation
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.wear.compose.material.*
+import androidx.wear.compose.material.Button
+import androidx.wear.compose.material.ButtonDefaults
+import androidx.wear.compose.material.MaterialTheme
+import androidx.wear.compose.material.Scaffold
+import androidx.wear.compose.material.Text
 
 // Assume these constants are defined somewhere accessible, e.g., in a companion object or a constants file
 const val EXTRA_CALC_MODE = "com.finoldigital.ygolp.EXTRA_CALC_MODE"
@@ -37,11 +51,11 @@ class CalculatorActivity : ComponentActivity() {
                 initialYgolp = initialYgolp,
                 initialMode = initialMode,
                 onFinish = { resultIntent ->
-                    setResult(Activity.RESULT_OK, resultIntent)
+                    setResult(RESULT_OK, resultIntent)
                     finish()
                 },
                 onCancel = {
-                    setResult(Activity.RESULT_CANCELED) // Or RESULT_OK based on `buttonX`'''s original intent
+                    setResult(RESULT_CANCELED) // Or RESULT_OK based on `buttonX`'''s original intent
                     finish()
                 }
             )
@@ -56,9 +70,8 @@ fun CalculatorScreen(
     onFinish: (Intent) -> Unit,
     onCancel: () -> Unit
 ) {
-    val context = LocalContext.current
-    var ygolp by remember { mutableStateOf(initialYgolp) }
-    var mode by remember { mutableStateOf(initialMode) } // 0:=> 1:- 2:+
+    var ygolp by remember { mutableIntStateOf(initialYgolp) }
+    var mode by remember { mutableIntStateOf(initialMode) } // 0:=> 1:- 2:+
     var text by remember { mutableStateOf("0") }
 
     val focusRequester = remember { FocusRequester() }
@@ -116,10 +129,12 @@ fun CalculatorScreen(
                                 submit()
                                 true
                             }
+
                             KeyEvent.KEYCODE_STEM_2 -> {
                                 onCancel() // Or a specific action for STEM_2 if it'''s not just cancel
                                 true
                             }
+
                             else -> false
                         }
                     } else {
@@ -138,7 +153,11 @@ fun CalculatorScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Button(
                         onClick = { nextMode() },
-                        colors = ButtonDefaults.buttonColors(backgroundColor = operatorTextAndColor.second.copy(alpha = 0.3f))
+                        colors = ButtonDefaults.buttonColors(
+                            backgroundColor = operatorTextAndColor.second.copy(
+                                alpha = 0.3f
+                            )
+                        )
                     ) {
                         Text(text = operatorTextAndColor.first, color = operatorTextAndColor.second)
                     }
@@ -178,10 +197,18 @@ fun CalculatorScreen(
                 // Action Buttons
                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                     CalculatorButton("C", buttonModifier, color = Color.DarkGray) { pop() }
-                    CalculatorButton("X", buttonModifier, color = MaterialTheme.colors.error) { onCancel() }
-                    CalculatorButton("=", buttonModifier, color = MaterialTheme.colors.primary) { submit() }
+                    CalculatorButton(
+                        "X",
+                        buttonModifier,
+                        color = MaterialTheme.colors.error
+                    ) { onCancel() }
+                    CalculatorButton(
+                        "=",
+                        buttonModifier,
+                        color = MaterialTheme.colors.primary
+                    ) { submit() }
                 }
-                 LaunchedEffect(Unit) {
+                LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
                 }
             }
@@ -190,7 +217,7 @@ fun CalculatorScreen(
 }
 
 @Composable
-fun RowScope.CalculatorButton(
+fun CalculatorButton(
     text: String,
     modifier: Modifier = Modifier,
     color: Color = MaterialTheme.colors.surface,
