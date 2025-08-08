@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
@@ -24,6 +25,8 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
@@ -181,15 +184,19 @@ class MainActivity : ComponentActivity() {
                     composable("lifepoints") {
                         LifePointsScreen(
                             displayedLifePoints
-                        ) { navController.navigate("calculator") }
+                        ) { mode -> navController.navigate("calculator/$mode") }
                     }
-                    composable("calculator") {
+                    composable(
+                        "calculator/{initialCalculatorMode}",
+                        arguments = listOf(navArgument("initialCalculatorMode") { type = NavType.IntType })
+                    ) { backStackEntry ->
+                        val initialCalculatorMode = backStackEntry.arguments?.getInt("initialCalculatorMode") ?: 1
                         CalculatorScreen(
-                            lifePoints, 1,
+                            lifePoints, initialCalculatorMode,
                             { result ->
                                 changeLifePoints(result)
-                                navController.navigate("lifepoints")
-                            }, { navController.navigate("lifepoints") })
+                                navController.popBackStack()
+                            }, { navController.popBackStack() })
                     }
                 }
             }
@@ -197,30 +204,46 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun LifePointsScreen(displayedLifePoints: Int, onShowCalculator: () -> Unit) {
-        Image(
-            painterResource(R.drawable.lifepoints_background),
-            contentDescription = "",
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { onShowCalculator() }
-        )
-        LifePointsText(displayedLifePoints) { onShowCalculator() }
+    fun LifePointsScreen(displayedLifePoints: Int, onShowCalculatorWithMode: (Int) -> Unit) {
+        Box(modifier = Modifier.fillMaxSize()) {
+            Image(
+                painterResource(R.drawable.lifepoints_background),
+                contentDescription = "",
+                contentScale = ContentScale.FillBounds,
+                modifier = Modifier.fillMaxSize()
+            )
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable { onShowCalculatorWithMode(2) }
+                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable { onShowCalculatorWithMode(0) }
+                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable { onShowCalculatorWithMode(1) }
+                )
+            }
+            LifePointsText(displayedLifePoints)
+        }
     }
 
     @Composable
-    fun LifePointsText(displayedLifePoints: Int, onShowCalculator: () -> Unit) {
+    fun LifePointsText(displayedLifePoints: Int) {
         Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { onShowCalculator() },
+            modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onShowCalculator() },
+                modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 color = Color(0xFFFBFF0C.toInt()),
                 fontFamily = FontFamily(Font(R.font.nationalyze_alp)),
