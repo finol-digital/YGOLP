@@ -1,6 +1,9 @@
 package com.finoldigital.ygolp.presentation
 
+import android.media.MediaPlayer
 import android.os.Bundle
+import android.os.CountDownTimer
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -9,6 +12,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,118 +33,78 @@ import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 import com.finoldigital.ygolp.R
 import com.finoldigital.ygolp.presentation.theme.WearAppTheme
 import com.google.android.horologist.compose.ambient.AmbientAware
+import java.util.Random
 
-const val EXTRA_YGOLP = "com.finoldigital.ygolp.EXTRA_YGOLP"
-
-const val DEFAULT_LIFE_POINTS = 8000
+const val LIFE_POINTS_KEY = "LIFE_POINTS_KEY"
+const val EXTRA_LIFE_POINTS = "com.finoldigital.ygolp.EXTRA_LIFE_POINTS"
+const val STARTING_LIFE_POINTS = 8000
 
 class MainActivity : ComponentActivity() {
-    /*
-        private var lifePoints: Int = 0
-        private var duelStartMP: MediaPlayer? = null
-        private var lifePointsChangeMP: MediaPlayer? = null
-        private var itsTimeToDuelMP: MediaPlayer? = null
-    */
+
+    private var lifePoints by mutableIntStateOf(0)
+    private var displayedLifePoints by mutableIntStateOf(0)
+
+    private var duelStartMP: MediaPlayer? = null
+    private var lifePointsChangeMP: MediaPlayer? = null
+    private var itsTimeToDuelMP: MediaPlayer? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Restore state now instead of onRestoreInstanceState
+        if (savedInstanceState == null)
+            restart()
+        else
+            changeLifePoints(savedInstanceState.getInt(LIFE_POINTS_KEY))
+
         setContent {
-            WearApp()
+            LifePointsScreen()
         }
     }
 
-    @Composable
-    fun WearApp() {
-        val navController = rememberSwipeDismissableNavController()
-        WearAppTheme {
-            AmbientAware { ambientStateUpdate ->
-                SwipeDismissableNavHost(
-                    navController = navController,
-                    startDestination = "life"
-                ) {
-                    composable("life") {
-                        LifeScreen(
-                            DEFAULT_LIFE_POINTS,
-                            onShowCalculator = { navController.navigate("calculator") }
-                        )
-                    }
-                    /* todo:
-                    composable("calculator") {
-                        CalculatorScreen()
-                    }*/
-                }
-            }
-        }
-    }
-
-    /* TODO:
-    // Use this to detect touch
-    val boxInsetLayout: BoxInsetLayout = findViewById(R.id.boxInsetLayout)
-    boxInsetLayout.setOnTouchListener(this)
-
-    // Restore state now instead of onRestoreInstanceState
-    if (savedInstanceState == null)
-        restart()
-    else
-        setLifePoints(savedInstanceState.getInt(LIFE_POINTS_KEY))*/
-    @Composable
-    fun LifeScreen(lifePoints: Int, onShowCalculator: () -> Unit) {
-        Image(
-            painterResource(R.drawable.lifepoints_background),
-            contentDescription = "",
-            contentScale = ContentScale.FillBounds,
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { onShowCalculator() }
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { onShowCalculator() },
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onShowCalculator() },
-                textAlign = TextAlign.Center,
-                color = Color(0xFFFBFF0C.toInt()),
-                fontFamily = FontFamily(Font(R.font.nationalyze_alp)),
-                fontSize = 32.sp,
-                text = lifePoints.toString()
-            )
-        }
-    }
-
-    @WearPreviewDevices
-    @WearPreviewFontScales
-    @Composable
-    fun LifePointsScreenPreview() {
-        LifeScreen(DEFAULT_LIFE_POINTS, onShowCalculator = {})
-    }
-
-    /* TODO: override fun onSaveInstanceState(outState: Bundle?) {
-        outState?.run {
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.run {
             putInt(LIFE_POINTS_KEY, lifePoints)
         }
-        if (outState != null)
-            super.onSaveInstanceState(outState)
+        super.onSaveInstanceState(outState)
     }
 
-    private fun restart() {
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        return if (event.repeatCount == 0) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_STEM_1 -> {
+                    restart()
+                    true
+                }
+
+                KeyEvent.KEYCODE_STEM_2 -> {
+                    startItsTimeToDuel()
+                    true
+                }
+
+                else -> {
+                    super.onKeyDown(keyCode, event)
+                }
+            }
+        } else {
+            super.onKeyDown(keyCode, event)
+        }
+    }
+
+    fun restart() {
         lifePoints = 0
-        textView.text = lifePoints.toString()
+        displayedLifePoints = 0
         if (duelStartMP == null) {
             duelStartMP = MediaPlayer.create(this, R.raw.duel_start)
             duelStartMP?.setOnCompletionListener {
                 stopDuelStart()
-                setLifePoints(DEFAULT_LIFE_POINTS)
+                changeLifePoints(STARTING_LIFE_POINTS)
             }
         }
         duelStartMP?.start()
     }
 
-    private fun setLifePoints(lp: Int) {
+    fun changeLifePoints(lp: Int) {
         if (lifePoints != lp) {
             lifePoints = lp
             if (lifePointsChangeMP == null) {
@@ -153,54 +119,15 @@ class MainActivity : ComponentActivity() {
                     val min = 1000
                     val max = 9999
                     val tick = Random().nextInt(max - min + 1) + min
-                    textView.text = tick.toString()
+                    displayedLifePoints = tick
                 }
 
                 override fun onFinish() {
-                    textView.text = lifePoints.toString()
+                    displayedLifePoints = lifePoints
                 }
             }.start()
         }
-        textView.text = lifePoints.toString()
-    }*/
-
-    /* TODO: override fun onTouch(view: View?, event: MotionEvent?): Boolean {
-        if (event?.action == MotionEvent.ACTION_UP) {
-            view?.performClick()
-            val height = resources.displayMetrics.heightPixels
-            val intent = Intent(this, CalculatorActivity::class.java).apply {
-                putExtra(EXTRA_YGOLP, lifePoints)
-                var mode = 2
-                val y = event.rawY
-                if (y > height / 3)
-                    mode = 0
-                if (y > height / 3 * 2)
-                    mode = 1
-                putExtra(EXTRA_CALC_MODE, mode)
-            }
-            startActivityForResult(intent, CHANGE_LIFE_POINTS)
-        }
-        return true
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        return if (event.repeatCount == 0) {
-            when (keyCode) {
-                KeyEvent.KEYCODE_STEM_1 -> {
-                    restart()
-                    true
-                }
-                KeyEvent.KEYCODE_STEM_2 -> {
-                    startItsTimeToDuel()
-                    true
-                }
-                else -> {
-                    super.onKeyDown(keyCode, event)
-                }
-            }
-        } else {
-            super.onKeyDown(keyCode, event)
-        }
+        displayedLifePoints = lifePoints
     }
 
     private fun startItsTimeToDuel() {
@@ -241,18 +168,60 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)}\n      with the appropriate {@link ActivityResultContract} and handling the result in the\n      {@link ActivityResultCallback#onActivityResult(Object) callback}.")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            CHANGE_LIFE_POINTS ->
-                if (resultCode == RESULT_OK) {
-                    data?.getIntExtra(EXTRA_YGOLP, DEFAULT_LIFE_POINTS)?.let { setLifePoints(it) }
+    @Composable
+    fun LifePointsScreen() {
+        val navController = rememberSwipeDismissableNavController()
+
+        WearAppTheme {
+            AmbientAware { ambientStateUpdate ->
+                SwipeDismissableNavHost(
+                    navController = navController,
+                    startDestination = "lifepoints"
+                ) {
+                    composable("lifepoints") {
+                        Image(
+                            painterResource(R.drawable.lifepoints_background),
+                            contentDescription = "",
+                            contentScale = ContentScale.FillBounds,
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clickable { navController.navigate("calculator") }
+                        )
+                        LifePointsText(displayedLifePoints) { navController.navigate("calculator") }
+                    }
+                    composable("calculator") {
+                        CalculatorScreen(lifePoints, 0, {}, {})
+                    }
                 }
+            }
         }
     }
 
-    companion object {
-        internal const val CHANGE_LIFE_POINTS = 0
-    }*/
+    @Composable
+    fun LifePointsText(displayedLifePoints: Int, onShowCalculator: () -> Unit) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable { onShowCalculator() },
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onShowCalculator() },
+                textAlign = TextAlign.Center,
+                color = Color(0xFFFBFF0C.toInt()),
+                fontFamily = FontFamily(Font(R.font.nationalyze_alp)),
+                fontSize = 32.sp,
+                text = displayedLifePoints.toString()
+            )
+        }
+    }
+
+    @WearPreviewDevices
+    @WearPreviewFontScales
+    @Composable
+    fun LifePointsScreenPreview() {
+        LifePointsScreen()
+    }
 }

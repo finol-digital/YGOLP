@@ -34,8 +34,9 @@ import androidx.wear.compose.material.ButtonDefaults
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
+import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
+import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 
-// Assume these constants are defined somewhere accessible, e.g., in a companion object or a constants file
 const val EXTRA_CALC_MODE = "com.finoldigital.ygolp.EXTRA_CALC_MODE"
 
 class CalculatorActivity : ComponentActivity() {
@@ -43,12 +44,12 @@ class CalculatorActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val initialYgolp = intent.getIntExtra(EXTRA_YGOLP, DEFAULT_LIFE_POINTS)
+        val initialLifePoints = intent.getIntExtra(EXTRA_LIFE_POINTS, STARTING_LIFE_POINTS)
         val initialMode = intent.getIntExtra(EXTRA_CALC_MODE, 0)
 
         setContent {
             CalculatorScreen(
-                initialYgolp = initialYgolp,
+                initialLifePoints = initialLifePoints,
                 initialMode = initialMode,
                 onFinish = { resultIntent ->
                     setResult(RESULT_OK, resultIntent)
@@ -65,14 +66,14 @@ class CalculatorActivity : ComponentActivity() {
 
 @Composable
 fun CalculatorScreen(
-    initialYgolp: Int,
+    initialLifePoints: Int,
     initialMode: Int,
     onFinish: (Intent) -> Unit,
     onCancel: () -> Unit
 ) {
-    var ygolp by remember { mutableIntStateOf(initialYgolp) }
+    var lifePoints by remember { mutableIntStateOf(initialLifePoints) }
     var mode by remember { mutableIntStateOf(initialMode) } // 0:=> 1:- 2:+
-    var text by remember { mutableStateOf("0") }
+    var operandText by remember { mutableStateOf("0") }
 
     val focusRequester = remember { FocusRequester() }
 
@@ -85,13 +86,15 @@ fun CalculatorScreen(
     }
 
     fun append(char: String) {
-        var currentText = text.trimStart('0')
+        var currentText = operandText.trimStart('0')
         currentText += char
-        text = if (currentText.toIntOrNull() == 0 || currentText.isEmpty()) "0" else currentText
+        operandText =
+            if (currentText.toIntOrNull() == 0 || currentText.isEmpty()) "0" else currentText
     }
 
     fun pop() {
-        text = if (text.length > 1) text.substring(0, text.length - 1) else "0"
+        operandText =
+            if (operandText.length > 1) operandText.substring(0, operandText.length - 1) else "0"
     }
 
     fun nextMode() {
@@ -99,17 +102,15 @@ fun CalculatorScreen(
     }
 
     fun submit() {
-        val input = text.toIntOrNull() ?: 0
+        val input = operandText.toIntOrNull() ?: 0
         val resultIntent = Intent()
         val resultLp = when (mode) {
             0 -> input
-            1 -> ygolp - input
-            2 -> ygolp + input
-            else -> ygolp
+            1 -> lifePoints - input
+            2 -> lifePoints + input
+            else -> lifePoints
         }
-        resultIntent.putExtra(EXTRA_YGOLP, resultLp)
-        // Pass back the mode if needed, or other data
-        // resultIntent.putExtra(EXTRA_CALC_MODE, mode)
+        resultIntent.putExtra(EXTRA_LIFE_POINTS, resultLp)
         onFinish(resultIntent)
     }
 
@@ -163,7 +164,7 @@ fun CalculatorScreen(
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = text,
+                        text = operandText,
                         fontSize = 24.sp,
                         color = operatorTextAndColor.second,
                         textAlign = TextAlign.End,
@@ -230,4 +231,11 @@ fun CalculatorButton(
     ) {
         Text(text)
     }
+}
+
+@WearPreviewDevices
+@WearPreviewFontScales
+@Composable
+fun CalculatorScreenPreview() {
+    CalculatorScreen(STARTING_LIFE_POINTS, 0, onFinish = {}, onCancel = {})
 }
