@@ -147,20 +147,25 @@ fun CalculatorScreen(
                 }
 
                 // Operator and Operand Display
-                Row(verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+                ) {
+                    Spacer(modifier = Modifier.weight(1f))
                     OperatorButton(
                         text = operatorTextAndColor.first,
                         modifier = Modifier.weight(1f),
                         color = operatorTextAndColor.second,
-                        onClick = {nextMode()})
+                        onClick = {nextMode()}
+                    )
                     Text(
                         text = operandText,
                         fontSize = 20.sp,
                         color = operatorTextAndColor.second,
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(3f)
+                        modifier = Modifier.weight(2f)
                     )
+                    Spacer(modifier = Modifier.weight(1f))
                 }
 
                 // Calculator Buttons
@@ -216,9 +221,9 @@ fun OperatorButton(
     Button(
         onClick = onClick,
         modifier = modifier.aspectRatio(1.5f), // Adjust aspect ratio as needed for Wear
-        colors = ButtonDefaults.buttonColors(backgroundColor = color)
+        colors = ButtonDefaults.buttonColors(backgroundColor = Color.DarkGray)
     ) {
-        Text(text)
+        Text(text, color = color)
     }
 }
 
@@ -242,5 +247,5 @@ fun CalculatorButton(
 @WearPreviewFontScales
 @Composable
 fun CalculatorScreenPreview() {
-    CalculatorScreen(STARTING_LIFE_POINTS, 1, onFinish = {}, onCancel = {})
+    CalculatorScreen(STARTING_LIFE_POINTS, 0, onFinish = {}, onCancel = {})
 }
