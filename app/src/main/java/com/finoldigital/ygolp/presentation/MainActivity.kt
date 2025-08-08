@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
             changeLifePoints(savedInstanceState.getInt(LIFE_POINTS_KEY))
 
         setContent {
-            LifePointsScreen()
+            WearApp()
         }
     }
 
@@ -169,7 +169,7 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun LifePointsScreen() {
+    fun WearApp() {
         val navController = rememberSwipeDismissableNavController()
 
         WearAppTheme {
@@ -179,24 +179,34 @@ class MainActivity : ComponentActivity() {
                     startDestination = "lifepoints"
                 ) {
                     composable("lifepoints") {
-                        Image(
-                            painterResource(R.drawable.lifepoints_background),
-                            contentDescription = "",
-                            contentScale = ContentScale.FillBounds,
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clickable { navController.navigate("calculator") }
-                        )
-                        LifePointsText(displayedLifePoints) { navController.navigate("calculator") }
+                        LifePointsScreen(
+                            displayedLifePoints
+                        ) { navController.navigate("calculator") }
                     }
                     composable("calculator") {
-                        CalculatorScreen(lifePoints, 1, { result ->
-                            changeLifePoints(result)
-                        }, {})
+                        CalculatorScreen(
+                            lifePoints, 1,
+                            { result ->
+                                changeLifePoints(result)
+                                navController.navigate("lifepoints")
+                            }, { navController.navigate("lifepoints") })
                     }
                 }
             }
         }
+    }
+
+    @Composable
+    fun LifePointsScreen(displayedLifePoints: Int, onShowCalculator: () -> Unit) {
+        Image(
+            painterResource(R.drawable.lifepoints_background),
+            contentDescription = "",
+            contentScale = ContentScale.FillBounds,
+            modifier = Modifier
+                .fillMaxSize()
+                .clickable { onShowCalculator() }
+        )
+        LifePointsText(displayedLifePoints) { onShowCalculator() }
     }
 
     @Composable
@@ -224,6 +234,6 @@ class MainActivity : ComponentActivity() {
     @WearPreviewFontScales
     @Composable
     fun LifePointsScreenPreview() {
-        LifePointsScreen()
+        LifePointsScreen(STARTING_LIFE_POINTS) {}
     }
 }
