@@ -9,7 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -279,9 +279,9 @@ class MainActivity : ComponentActivity() {
             modifier = Modifier
                 .fillMaxSize()
                 .pointerInput(Unit) {
-                    detectVerticalDragGestures { change, dragAmount ->
+                    detectHorizontalDragGestures { change, dragAmount ->
                         change.consume()
-                        if (dragAmount < 0) { // Swipe up
+                        if (dragAmount < 0) { // Swipe left
                             onNavigateToPlayer2()
                         }
                     }
@@ -328,9 +328,9 @@ class MainActivity : ComponentActivity() {
                 .fillMaxSize()
                 .background(Color.Blue)
                 .pointerInput(Unit) {
-                    detectVerticalDragGestures { change, dragAmount ->
+                    detectHorizontalDragGestures { change, dragAmount ->
                         change.consume()
-                        if (dragAmount > 0) { // Swipe down
+                        if (dragAmount > 0) { // Swipe right
                             onNavigateToPlayer1()
                         }
                     }
@@ -384,7 +384,7 @@ class MainActivity : ComponentActivity() {
     @WearPreviewFontScales
     @Composable
     fun LifePointsScreenPreview() {
-        LifePointsScreen(STARTING_LIFE_POINTS, {}, {})
+        LifePointsScreen(0, {}, {})
     }
 
     @WearPreviewDevices
