@@ -7,7 +7,9 @@ import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
@@ -39,6 +42,7 @@ import com.google.android.horologist.compose.ambient.AmbientAware
 import java.util.Random
 
 const val LIFE_POINTS_KEY = "LIFE_POINTS_KEY"
+const val LIFE_POINTS_2_KEY = "LIFE_POINTS_2_KEY"
 const val EXTRA_LIFE_POINTS = "com.finoldigital.ygolp.EXTRA_LIFE_POINTS"
 const val STARTING_LIFE_POINTS = 8000
 
@@ -46,6 +50,8 @@ class MainActivity : ComponentActivity() {
 
     private var lifePoints by mutableIntStateOf(0)
     private var displayedLifePoints by mutableIntStateOf(0)
+    private var lifePoints2 by mutableIntStateOf(0)
+    private var displayedLifePoints2 by mutableIntStateOf(0)
 
     private var duelStartMP: MediaPlayer? = null
     private var lifePointsChangeMP: MediaPlayer? = null
@@ -54,11 +60,13 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Restore state now instead of onRestoreInstanceState
-        if (savedInstanceState == null)
-            restart()
-        else
-            changeLifePoints(savedInstanceState.getInt(LIFE_POINTS_KEY))
+        if (savedInstanceState == null) {
+            start()
+        } else {
+            changeLifePoints(savedInstanceState.getInt(LIFE_POINTS_KEY), 1, false)
+            lifePoints2 = savedInstanceState.getInt(LIFE_POINTS_2_KEY)
+            displayedLifePoints2 = lifePoints2
+        }
 
         setContent {
             WearApp()
@@ -68,6 +76,7 @@ class MainActivity : ComponentActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         outState.run {
             putInt(LIFE_POINTS_KEY, lifePoints)
+            putInt(LIFE_POINTS_2_KEY, lifePoints2)
         }
         super.onSaveInstanceState(outState)
     }
@@ -94,6 +103,20 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    fun start() {
+        lifePoints2 = STARTING_LIFE_POINTS
+        displayedLifePoints2 = STARTING_LIFE_POINTS
+        if (itsTimeToDuelMP == null) {
+            itsTimeToDuelMP = MediaPlayer.create(this, R.raw.its_time_to_duel)
+            itsTimeToDuelMP?.setOnCompletionListener {
+                itsTimeToDuelMP?.setOnCompletionListener {}
+                stopItsTimeToDuel()
+                restart()
+            }
+        }
+        itsTimeToDuelMP?.start()
+    }
+
     fun restart() {
         lifePoints = 0
         displayedLifePoints = 0
@@ -101,36 +124,55 @@ class MainActivity : ComponentActivity() {
             duelStartMP = MediaPlayer.create(this, R.raw.duel_start)
             duelStartMP?.setOnCompletionListener {
                 stopDuelStart()
-                changeLifePoints(STARTING_LIFE_POINTS)
+                changeLifePoints(STARTING_LIFE_POINTS, 1)
             }
         }
         duelStartMP?.start()
     }
 
-    fun changeLifePoints(lp: Int) {
-        if (lifePoints != lp) {
-            lifePoints = lp
-            if (lifePointsChangeMP == null) {
-                lifePointsChangeMP = MediaPlayer.create(this, R.raw.lifepoints_change)
-                lifePointsChangeMP?.setOnCompletionListener {
-                    stopLifePointsChange()
-                }
+    fun changeLifePoints(lp: Int, player: Int, playSound: Boolean = true) {
+        val currentLp = if (player == 1) lifePoints else lifePoints2
+        if (currentLp != lp) {
+            if (player == 1) {
+                lifePoints = lp
+            } else {
+                lifePoints2 = lp
             }
-            lifePointsChangeMP?.start()
-            object : CountDownTimer(2100, 50) {
+            if (playSound) {
+                if (lifePointsChangeMP == null) {
+                    lifePointsChangeMP = MediaPlayer.create(this, R.raw.lifepoints_change)
+                    lifePointsChangeMP?.setOnCompletionListener {
+                        stopLifePointsChange()
+                    }
+                }
+                lifePointsChangeMP?.start()
+            }
+            object : CountDownTimer(if (playSound) 2100 else 0, 50) {
                 override fun onTick(millisUntilFinished: Long) {
                     val min = 1000
                     val max = 9999
                     val tick = Random().nextInt(max - min + 1) + min
-                    displayedLifePoints = tick
+                    if (player == 1) {
+                        displayedLifePoints = tick
+                    } else {
+                        displayedLifePoints2 = tick
+                    }
                 }
 
                 override fun onFinish() {
-                    displayedLifePoints = lifePoints
+                    if (player == 1) {
+                        displayedLifePoints = lifePoints
+                    } else {
+                        displayedLifePoints2 = lifePoints2
+                    }
                 }
             }.start()
         }
-        displayedLifePoints = lifePoints
+        if (player == 1) {
+            displayedLifePoints = lifePoints
+        } else {
+            displayedLifePoints2 = lifePoints2
+        }
     }
 
     private fun startItsTimeToDuel() {
@@ -176,25 +218,49 @@ class MainActivity : ComponentActivity() {
         val navController = rememberSwipeDismissableNavController()
 
         WearAppTheme {
-            AmbientAware { ambientStateUpdate ->
+            AmbientAware { _ ->
                 SwipeDismissableNavHost(
                     navController = navController,
-                    startDestination = "lifepoints"
+                    startDestination = "lifepoints/1" // Start with player 1
                 ) {
-                    composable("lifepoints") {
-                        LifePointsScreen(
-                            displayedLifePoints
-                        ) { mode -> navController.navigate("calculator/$mode") }
+                    composable("lifepoints/{player}") { backStackEntry ->
+                        val player =
+                            backStackEntry.arguments?.getString("player")?.toIntOrNull() ?: 1
+                        if (player == 1) {
+                            LifePointsScreen(
+                                displayedLifePoints = displayedLifePoints,
+                                onShowCalculatorWithMode = { mode -> navController.navigate("calculator/1/$mode") },
+                                onNavigateToPlayer2 = { navController.navigate("lifepoints/2") }
+                            )
+                        } else {
+                            LifePointsScreen2(
+                                displayedLifePoints = displayedLifePoints2,
+                                onShowCalculatorWithMode = { mode -> navController.navigate("calculator/2/$mode") },
+                                onNavigateToPlayer1 = {
+                                    navController.navigate("lifepoints/1") {
+                                        popUpTo(
+                                            "lifepoints/1"
+                                        ) { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
                     }
                     composable(
-                        "calculator/{initialCalculatorMode}",
-                        arguments = listOf(navArgument("initialCalculatorMode") { type = NavType.IntType })
+                        "calculator/{player}/{initialCalculatorMode}",
+                        arguments = listOf(
+                            navArgument("player") { type = NavType.IntType },
+                            navArgument("initialCalculatorMode") { type = NavType.IntType }
+                        )
                     ) { backStackEntry ->
-                        val initialCalculatorMode = backStackEntry.arguments?.getInt("initialCalculatorMode") ?: 1
+                        val player = backStackEntry.arguments?.getInt("player") ?: 1
+                        val initialCalculatorMode =
+                            backStackEntry.arguments?.getInt("initialCalculatorMode") ?: 1
+                        val currentLifePoints = if (player == 1) lifePoints else lifePoints2
                         CalculatorScreen(
-                            lifePoints, initialCalculatorMode,
+                            currentLifePoints, initialCalculatorMode,
                             { result ->
-                                changeLifePoints(result)
+                                changeLifePoints(result, player)
                                 navController.popBackStack()
                             }, { navController.popBackStack() })
                     }
@@ -204,8 +270,23 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
-    fun LifePointsScreen(displayedLifePoints: Int, onShowCalculatorWithMode: (Int) -> Unit) {
-        Box(modifier = Modifier.fillMaxSize()) {
+    fun LifePointsScreen(
+        displayedLifePoints: Int,
+        onShowCalculatorWithMode: (Int) -> Unit,
+        onNavigateToPlayer2: () -> Unit
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures { change, dragAmount ->
+                        change.consume()
+                        if (dragAmount < 0) { // Swipe left
+                            onNavigateToPlayer2()
+                        }
+                    }
+                }
+        ) {
             Image(
                 painterResource(R.drawable.lifepoints_background),
                 contentDescription = "",
@@ -237,18 +318,64 @@ class MainActivity : ComponentActivity() {
     }
 
     @Composable
+    fun LifePointsScreen2(
+        displayedLifePoints: Int,
+        onShowCalculatorWithMode: (Int) -> Unit,
+        onNavigateToPlayer1: () -> Unit
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Blue)
+                .pointerInput(Unit) {
+                    detectHorizontalDragGestures { change, dragAmount ->
+                        change.consume()
+                        if (dragAmount > 0) { // Swipe right
+                            onNavigateToPlayer1()
+                        }
+                    }
+                }
+        ) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable { onShowCalculatorWithMode(2) }
+                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable { onShowCalculatorWithMode(0) }
+                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable { onShowCalculatorWithMode(1) }
+                )
+            }
+            LifePointsText(displayedLifePoints)
+        }
+    }
+
+
+    @Composable
     fun LifePointsText(displayedLifePoints: Int) {
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+            val lifePointsText =
+                if (displayedLifePoints > 0) displayedLifePoints.toString() else "YGOLP"
             Text(
                 modifier = Modifier.fillMaxWidth(),
                 textAlign = TextAlign.Center,
                 color = Color(0xFFFBFF0C.toInt()),
                 fontFamily = FontFamily(Font(R.font.nationalyze_alp)),
                 fontSize = 32.sp,
-                text = displayedLifePoints.toString()
+                text = lifePointsText
             )
         }
     }
@@ -257,6 +384,13 @@ class MainActivity : ComponentActivity() {
     @WearPreviewFontScales
     @Composable
     fun LifePointsScreenPreview() {
-        LifePointsScreen(STARTING_LIFE_POINTS) {}
+        LifePointsScreen(0, {}, {})
+    }
+
+    @WearPreviewDevices
+    @WearPreviewFontScales
+    @Composable
+    fun LifePointsScreen2Preview() {
+        LifePointsScreen2(STARTING_LIFE_POINTS, {}, {})
     }
 }
