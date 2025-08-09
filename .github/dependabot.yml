@@ -1,4 +1,3 @@
-
 version: 2
 updates:
   - package-ecosystem: "gradle"
@@ -9,9 +8,6 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
-    labels:
-      - "dependencies"
-      - "automerge"
     ignore:
       - dependency-name: "com.android.tools.build:gradle"
         update-types: ["version-update:semver-major"]
@@ -23,6 +19,3 @@ updates:
     commit-message:
       prefix: "ci"
       include: "scope"
-    labels:
-      - "dependencies"
-      - "automerge"
