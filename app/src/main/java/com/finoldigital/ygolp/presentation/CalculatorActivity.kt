@@ -6,11 +6,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -132,7 +134,7 @@ fun CalculatorScreen(
                     .fillMaxSize()
                     .padding(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(2.dp)
+                verticalArrangement = Arrangement.spacedBy(1.dp)
             ) {
 
                 // LifePoints Display
@@ -156,7 +158,7 @@ fun CalculatorScreen(
                         text = operatorTextAndColor.first,
                         modifier = Modifier.weight(1f),
                         color = operatorTextAndColor.second,
-                        onClick = {nextMode()}
+                        onClick = { nextMode() }
                     )
                     Text(
                         text = operandText,
@@ -169,39 +171,38 @@ fun CalculatorScreen(
                 }
 
                 // Calculator Buttons
-                val buttonModifier = Modifier.weight(1f)
-                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    CalculatorButton("7", buttonModifier) { append("7") }
-                    CalculatorButton("8", buttonModifier) { append("8") }
-                    CalculatorButton("9", buttonModifier) { append("9") }
-                    CalculatorButton("C", buttonModifier, color = Color.DarkGray) { pop() }
+                // Row 1
+                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                    CalculatorButton("7") { append("7") }
+                    CalculatorButton("8") { append("8") }
+                    CalculatorButton("9") { append("9") }
+                    CalculatorButton("C", color = Color.DarkGray) { pop() }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    CalculatorButton("4", buttonModifier) { append("4") }
-                    CalculatorButton("5", buttonModifier) { append("5") }
-                    CalculatorButton("6", buttonModifier) { append("6") }
+                // Row 2
+                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                    CalculatorButton("4") { append("4") }
+                    CalculatorButton("5") { append("5") }
+                    CalculatorButton("6") { append("6") }
                     CalculatorButton(
                         "X",
-                        buttonModifier,
                         color = MaterialTheme.colors.error
                     ) { onCancel() }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    CalculatorButton("1", buttonModifier) { append("1") }
-                    CalculatorButton("2", buttonModifier) { append("2") }
-                    CalculatorButton("3", buttonModifier) { append("3") }
+                // Row 3
+                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                    CalculatorButton("1") { append("1") }
+                    CalculatorButton("2") { append("2") }
+                    CalculatorButton("3") { append("3") }
                     CalculatorButton(
                         "=",
-                        buttonModifier,
                         color = MaterialTheme.colors.primary
                     ) { submit() }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Spacer(modifier = Modifier.weight(0.5f))
-                    CalculatorButton("0", buttonModifier) { append("0") }
-                    CalculatorButton("00", buttonModifier) { append("00") }
-                    CalculatorButton("000", buttonModifier) { append("000") }
-                    Spacer(modifier = Modifier.weight(0.5f))
+                // Row 4
+                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                    CalculatorButton("0") { append("0") }
+                    CalculatorButton("00") { append("00") }
+                    CalculatorButton("000") { append("000") }
                 }
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
@@ -230,13 +231,16 @@ fun OperatorButton(
 @Composable
 fun CalculatorButton(
     text: String,
-    modifier: Modifier = Modifier,
+    modifier: Modifier = Modifier, // For additional styling from the caller
     color: Color = MaterialTheme.colors.surface,
     onClick: () -> Unit
 ) {
     Button(
         onClick = onClick,
-        modifier = modifier.aspectRatio(1.5f), // Adjust aspect ratio as needed for Wear
+        modifier = Modifier // Start with a new Modifier chain for the Button's core style
+            .width(ButtonDefaults.DefaultButtonSize * 0.75f)
+            .aspectRatio(1.5f) // Calculate height from this fixed width
+            .then(modifier), // Then apply any modifier passed to CalculatorButton externally
         colors = ButtonDefaults.buttonColors(backgroundColor = color)
     ) {
         Text(text)
