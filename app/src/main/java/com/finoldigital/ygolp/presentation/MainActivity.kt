@@ -6,36 +6,15 @@ import android.os.CountDownTimer
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
-import androidx.wear.compose.material.Text
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
-import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
-import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 import com.finoldigital.ygolp.R
 import com.finoldigital.ygolp.presentation.theme.WearAppTheme
 import com.google.android.horologist.compose.ambient.AmbientAware
@@ -230,19 +209,14 @@ class MainActivity : ComponentActivity() {
                             LifePointsScreen(
                                 displayedLifePoints = displayedLifePoints,
                                 onShowCalculatorWithMode = { mode -> navController.navigate("calculator/1/$mode") },
-                                onNavigateToPlayer2 = { navController.navigate("lifepoints/2") }
+                                onNextPlayer = { navController.navigate("lifepoints/2") }
                             )
                         } else {
-                            LifePointsScreen2(
+                            LifePointsScreen(
                                 displayedLifePoints = displayedLifePoints2,
                                 onShowCalculatorWithMode = { mode -> navController.navigate("calculator/2/$mode") },
-                                onNavigateToPlayer1 = {
-                                    navController.navigate("lifepoints/1") {
-                                        popUpTo(
-                                            "lifepoints/1"
-                                        ) { inclusive = true }
-                                    }
-                                }
+                                onNextPlayer = { /* No next player, stay on player 2 */ },
+                                playerId = 2
                             )
                         }
                     }
@@ -267,130 +241,5 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-    }
-
-    @Composable
-    fun LifePointsScreen(
-        displayedLifePoints: Int,
-        onShowCalculatorWithMode: (Int) -> Unit,
-        onNavigateToPlayer2: () -> Unit
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures { change, dragAmount ->
-                        change.consume()
-                        if (dragAmount < 0) { // Swipe left
-                            onNavigateToPlayer2()
-                        }
-                    }
-                }
-        ) {
-            Image(
-                painterResource(R.drawable.lifepoints_background),
-                contentDescription = "",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
-            )
-            Column(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(2) }
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(0) }
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(1) }
-                )
-            }
-            LifePointsText(displayedLifePoints)
-        }
-    }
-
-    @Composable
-    fun LifePointsScreen2(
-        displayedLifePoints: Int,
-        onShowCalculatorWithMode: (Int) -> Unit,
-        onNavigateToPlayer1: () -> Unit
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.Blue)
-                .pointerInput(Unit) {
-                    detectHorizontalDragGestures { change, dragAmount ->
-                        change.consume()
-                        if (dragAmount > 0) { // Swipe right
-                            onNavigateToPlayer1()
-                        }
-                    }
-                }
-        ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(2) }
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(0) }
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(1) }
-                )
-            }
-            LifePointsText(displayedLifePoints)
-        }
-    }
-
-
-    @Composable
-    fun LifePointsText(displayedLifePoints: Int) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            val lifePointsText =
-                if (displayedLifePoints > 0) displayedLifePoints.toString() else "YGOLP"
-            Text(
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                color = Color(0xFFFBFF0C.toInt()),
-                fontFamily = FontFamily(Font(R.font.nationalyze_alp)),
-                fontSize = 32.sp,
-                text = lifePointsText
-            )
-        }
-    }
-
-    @WearPreviewDevices
-    @WearPreviewFontScales
-    @Composable
-    fun LifePointsScreenPreview() {
-        LifePointsScreen(0, {}, {})
-    }
-
-    @WearPreviewDevices
-    @WearPreviewFontScales
-    @Composable
-    fun LifePointsScreen2Preview() {
-        LifePointsScreen2(STARTING_LIFE_POINTS, {}, {})
     }
 }
