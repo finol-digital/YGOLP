@@ -207,7 +207,11 @@ class MainActivity : ComponentActivity() {
                             LifePointsScreen(
                                 displayedLifePoints = displayedLifePoints,
                                 onShowCalculatorWithMode = { mode -> navController.navigate("calculator/1/$mode") },
-                                onSwipePlayer = { navController.navigate("lifepoints/2") },
+                                onSwipePlayer = {
+                                    navController.navigate("lifepoints/2") {
+                                        launchSingleTop = true
+                                    }
+                                },
                                 playerId = player
                             )
                         } else {
