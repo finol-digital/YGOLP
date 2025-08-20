@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -24,7 +24,8 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
     ) {
         val indicatorColor = Color.White
         val cornerRadius = CornerRadius(4.dp.value, 4.dp.value)
-        val indicatorSize = DpSize(width = 12.dp, height = 6.dp) // Adjusted size
+        val indicatorSize =
+            DpSize(width = 12.dp, height = 6.dp) // Adjusted size, now uses framework DpSize
         val indicatorPadding = 4.dp // Padding between indicators
 
 
@@ -72,27 +73,4 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
             }
         }
     }
-}
-
-@JvmInline
-value class DpSize(val packedValue: Long) {
-    constructor(width: Dp, height: Dp) : this(packFloats(width.value, height.value))
-}
-
-internal fun packFloats(val1: Float, val2: Float): Long {
-    val v1 = val1.toBits().toLong()
-    val v2 = val2.toBits().toLong()
-    return v1.shl(32) or (v2 and 0xFFFFFFFF)
-}
-
-val DpSize.width: Dp get() = Dp(unpackFloat1(packedValue))
-
-val DpSize.height: Dp get() = Dp(unpackFloat2(packedValue))
-
-internal fun unpackFloat1(value: Long): Float {
-    return Float.fromBits(value.shr(32).toInt())
-}
-
-internal fun unpackFloat2(value: Long): Float {
-    return Float.fromBits(value.and(0xFFFFFFFF).toInt())
 }

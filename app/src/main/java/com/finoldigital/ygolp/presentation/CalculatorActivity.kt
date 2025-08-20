@@ -37,7 +37,6 @@ import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
-import kotlin.Int
 
 const val EXTRA_CALCULATOR_MODE = "com.finoldigital.ygolp.EXTRA_CALCULATOR_MODE"
 
