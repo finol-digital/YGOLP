@@ -207,14 +207,14 @@ class MainActivity : ComponentActivity() {
                             LifePointsScreen(
                                 displayedLifePoints = displayedLifePoints,
                                 onShowCalculatorWithMode = { mode -> navController.navigate("calculator/1/$mode") },
-                                onNextPlayer = { navController.navigate("lifepoints/2") },
+                                onSwipePlayer = { navController.navigate("lifepoints/2") },
                                 playerId = player
                             )
                         } else {
                             LifePointsScreen(
                                 displayedLifePoints = displayedLifePoints2,
                                 onShowCalculatorWithMode = { mode -> navController.navigate("calculator/2/$mode") },
-                                onNextPlayer = { /* No next player, stay on player 2 */ },
+                                onSwipePlayer = { navController.popBackStack() },
                                 playerId = player
                             )
                         }
