@@ -22,8 +22,6 @@ import java.util.Random
 
 const val LIFE_POINTS_KEY = "LIFE_POINTS_KEY"
 const val LIFE_POINTS_2_KEY = "LIFE_POINTS_2_KEY"
-const val EXTRA_LIFE_POINTS = "com.finoldigital.ygolp.EXTRA_LIFE_POINTS"
-const val STARTING_LIFE_POINTS = 8000
 
 class MainActivity : ComponentActivity() {
 
@@ -209,14 +207,15 @@ class MainActivity : ComponentActivity() {
                             LifePointsScreen(
                                 displayedLifePoints = displayedLifePoints,
                                 onShowCalculatorWithMode = { mode -> navController.navigate("calculator/1/$mode") },
-                                onNextPlayer = { navController.navigate("lifepoints/2") }
+                                onNextPlayer = { navController.navigate("lifepoints/2") },
+                                playerId = player
                             )
                         } else {
                             LifePointsScreen(
                                 displayedLifePoints = displayedLifePoints2,
                                 onShowCalculatorWithMode = { mode -> navController.navigate("calculator/2/$mode") },
                                 onNextPlayer = { /* No next player, stay on player 2 */ },
-                                playerId = 2
+                                playerId = player
                             )
                         }
                     }
@@ -236,7 +235,9 @@ class MainActivity : ComponentActivity() {
                             { result ->
                                 changeLifePoints(result, player)
                                 navController.popBackStack()
-                            }, { navController.popBackStack() })
+                            }, { navController.popBackStack() },
+                            playerId = player
+                        )
                     }
                 }
             }

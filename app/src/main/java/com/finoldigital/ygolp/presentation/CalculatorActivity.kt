@@ -5,6 +5,7 @@ import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box // Added import
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
@@ -36,6 +37,7 @@ import androidx.wear.compose.material.Scaffold
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
+import kotlin.Int
 
 const val EXTRA_CALCULATOR_MODE = "com.finoldigital.ygolp.EXTRA_CALCULATOR_MODE"
 
@@ -46,13 +48,16 @@ class CalculatorActivity : ComponentActivity() {
 
         val initialLifePoints = intent.getIntExtra(EXTRA_LIFE_POINTS, STARTING_LIFE_POINTS)
         val initialCalculatorMode = intent.getIntExtra(EXTRA_CALCULATOR_MODE, 0)
+        // Assuming playerId might also come from intent or be fixed for this activity instance
+        val playerId = intent.getIntExtra("PLAYER_ID_KEY", 1) // Example, adjust as needed
 
         setContent {
             CalculatorScreen(
                 initialLifePoints = initialLifePoints,
                 initialCalculatorMode = initialCalculatorMode,
-                onFinish = {},
-                onCancel = {}
+                onFinish = { /* do nothing */ },
+                onCancel = { /* do nothing */ },
+                playerId = playerId
             )
         }
     }
@@ -63,7 +68,8 @@ fun CalculatorScreen(
     initialLifePoints: Int,
     initialCalculatorMode: Int,
     onFinish: (Int) -> Unit,
-    onCancel: () -> Unit
+    onCancel: () -> Unit,
+    playerId: Int = 1
 ) {
     val lifePoints = initialLifePoints
     var calculatorMode by remember { mutableIntStateOf(initialCalculatorMode) } // 0:=> 1:- 2:+
@@ -129,81 +135,92 @@ fun CalculatorScreen(
                     }
                 }
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(1.dp)
-            ) {
-
-                // LifePoints Display
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = lifePoints.toString(),
-                        fontSize = 20.sp,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                // Operator and Operand Display
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
+            Box(modifier = Modifier.fillMaxSize()) { // Wrap content in a Box
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(1.dp)
                 ) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    OperatorButton(
-                        text = operatorTextAndColor.first,
-                        modifier = Modifier.weight(1f),
-                        color = operatorTextAndColor.second,
-                        onClick = { nextMode() }
-                    )
-                    Text(
-                        text = operandText,
-                        fontSize = 20.sp,
-                        color = operatorTextAndColor.second,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(2f)
-                    )
-                    Spacer(modifier = Modifier.weight(1f))
-                }
 
-                // Calculator Buttons
-                // Row 1
-                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton("7") { append("7") }
-                    CalculatorButton("8") { append("8") }
-                    CalculatorButton("9") { append("9") }
-                    CalculatorButton("C", color = Color.DarkGray) { pop() }
+                    // LifePoints Display
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = lifePoints.toString(),
+                            fontSize = 20.sp,
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    // Operator and Operand Display
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        OperatorButton(
+                            text = operatorTextAndColor.first,
+                            modifier = Modifier.weight(1f),
+                            color = operatorTextAndColor.second,
+                            onClick = { nextMode() }
+                        )
+                        Text(
+                            text = operandText,
+                            fontSize = 20.sp,
+                            color = operatorTextAndColor.second,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.weight(2f)
+                        )
+                        Spacer(modifier = Modifier.weight(1f))
+                    }
+
+                    // Calculator Buttons
+                    // Row 1
+                    FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                        CalculatorButton("7") { append("7") }
+                        CalculatorButton("8") { append("8") }
+                        CalculatorButton("9") { append("9") }
+                        CalculatorButton("C", color = Color.DarkGray) { pop() }
+                    }
+                    // Row 2
+                    FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                        CalculatorButton("4") { append("4") }
+                        CalculatorButton("5") { append("5") }
+                        CalculatorButton("6") { append("6") }
+                        CalculatorButton(
+                            "X",
+                            color = MaterialTheme.colors.error
+                        ) { onCancel() }
+                    }
+                    // Row 3
+                    FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                        CalculatorButton("1") { append("1") }
+                        CalculatorButton("2") { append("2") }
+                        CalculatorButton("3") { append("3") }
+                        CalculatorButton(
+                            "=",
+                            color = MaterialTheme.colors.primary
+                        ) { submit() }
+                    }
+                    // Row 4
+                    FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                        CalculatorButton("0") { append("0") }
+                        CalculatorButton("00") { append("00") }
+                        CalculatorButton("000") { append("000") }
+                    }
+                    // Spacer to push PlayerIndicator down if Column doesn't fill height
+                    // This might not be needed if Column is .fillMaxSize() and PlayerIndicator is outside it.
+                    // Spacer(Modifier.weight(1f))
                 }
-                // Row 2
-                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton("4") { append("4") }
-                    CalculatorButton("5") { append("5") }
-                    CalculatorButton("6") { append("6") }
-                    CalculatorButton(
-                        "X",
-                        color = MaterialTheme.colors.error
-                    ) { onCancel() }
-                }
-                // Row 3
-                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton("1") { append("1") }
-                    CalculatorButton("2") { append("2") }
-                    CalculatorButton("3") { append("3") }
-                    CalculatorButton(
-                        "=",
-                        color = MaterialTheme.colors.primary
-                    ) { submit() }
-                }
-                // Row 4
-                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton("0") { append("0") }
-                    CalculatorButton("00") { append("00") }
-                    CalculatorButton("000") { append("000") }
-                }
+                PlayerIndicator(
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 16.dp), // Added padding for spacing from the edge
+                    playerId = playerId
+                )
                 LaunchedEffect(Unit) {
                     focusRequester.requestFocus()
                 }
@@ -251,5 +268,5 @@ fun CalculatorButton(
 @WearPreviewFontScales
 @Composable
 fun CalculatorScreenPreview() {
-    CalculatorScreen(STARTING_LIFE_POINTS, 0, onFinish = {}, onCancel = {})
+    CalculatorScreen(STARTING_LIFE_POINTS, 0, onFinish = {}, onCancel = {}, playerId = 1)
 }
