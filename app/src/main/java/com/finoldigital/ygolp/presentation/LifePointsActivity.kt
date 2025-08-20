@@ -43,7 +43,7 @@ class LifePointsActivity : ComponentActivity() {
             LifePointsScreen(
                 displayedLifePoints = displayedLifePoints,
                 onShowCalculatorWithMode = { /* do nothing */ },
-                onNextPlayer = { /* do nothing */ }
+                onSwipePlayer = { /* do nothing */ }
             )
         }
     }
@@ -53,7 +53,7 @@ class LifePointsActivity : ComponentActivity() {
 fun LifePointsScreen(
     displayedLifePoints: Int,
     onShowCalculatorWithMode: (Int) -> Unit,
-    onNextPlayer: () -> Unit,
+    onSwipePlayer: () -> Unit,
     playerId: Int = 1,
 ) {
     Box(
@@ -63,8 +63,10 @@ fun LifePointsScreen(
             .pointerInput(Unit) {
                 detectHorizontalDragGestures { change, dragAmount ->
                     change.consume()
-                    if (dragAmount < 0) { // Swipe left
-                        onNextPlayer()
+                    if ((playerId == 1 && dragAmount < 0) // Player 1 swipe left
+                        || (playerId == 2 && dragAmount > 0) // Player 2 swipe right
+                    ) {
+                        onSwipePlayer()
                     }
                 }
             }
