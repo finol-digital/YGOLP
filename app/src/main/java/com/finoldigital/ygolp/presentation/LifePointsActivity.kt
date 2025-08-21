@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
@@ -79,12 +80,18 @@ fun LifePointsScreen(
                 modifier = Modifier.fillMaxSize()
             )
         } else {
-            // Optional: Add a different background for Player 2 or make it plain
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(Color.Blue)
-            ) // Placeholder background for P2
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                Color.Blue,
+                                Color.Black
+                            )
+                        )
+                    )
+            ) // Gradient background for P2
         }
 
         Column(modifier = Modifier.fillMaxSize()) {
@@ -156,3 +163,4 @@ fun LifePointsScreenPreview() {
 fun LifePointsScreenPreview2() {
     LifePointsScreen(STARTING_LIFE_POINTS, {}, {}, playerId = 2)
 }
+
