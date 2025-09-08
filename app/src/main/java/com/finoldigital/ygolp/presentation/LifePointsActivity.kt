@@ -163,4 +163,3 @@ fun LifePointsScreenPreview() {
 fun LifePointsScreenPreview2() {
     LifePointsScreen(STARTING_LIFE_POINTS, {}, {}, playerId = 2)
 }
-
