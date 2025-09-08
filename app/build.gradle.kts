@@ -14,8 +14,8 @@ android {
         applicationId = "com.finoldigital.ygolp"
         minSdk = 33
         targetSdk = 36
-        versionCode = 7
-        versionName = "2.3.0"
+        versionCode = 8
+        versionName = "2.3.1"
 
     }
 
@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.core.splashscreen)
     implementation(libs.compose.ui.tooling)
     implementation(libs.horologist.compose.layout)
+    implementation(libs.datastore.preferences)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     androidTestImplementation(libs.espresso.core) // Added Espresso

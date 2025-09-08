@@ -1,5 +1,6 @@
 package com.finoldigital.ygolp.presentation
 
+import android.content.Context
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.CountDownTimer
@@ -10,6 +11,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
@@ -18,12 +25,23 @@ import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.finoldigital.ygolp.R
 import com.finoldigital.ygolp.presentation.theme.WearAppTheme
 import com.google.android.horologist.compose.ambient.AmbientAware
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.util.Random
 
 const val LIFE_POINTS_KEY = "LIFE_POINTS_KEY"
 const val LIFE_POINTS_2_KEY = "LIFE_POINTS_2_KEY"
 
+// At the top-level, outside MainActivity
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "lifepoints_settings")
+
 class MainActivity : ComponentActivity() {
+
+    companion object {
+        val LIFE_POINTS_P1_DS_KEY = intPreferencesKey("life_points_p1")
+        val LIFE_POINTS_P2_DS_KEY = intPreferencesKey("life_points_p2")
+    }
 
     private var lifePoints by mutableIntStateOf(0)
     private var displayedLifePoints by mutableIntStateOf(0)
@@ -37,11 +55,34 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Load data from DataStore
+        runBlocking { // Use runBlocking for simplicity in onCreate
+            val preferences = dataStore.data.first()
+            lifePoints = preferences[LIFE_POINTS_P1_DS_KEY] ?: 0
+            lifePoints2 = preferences[LIFE_POINTS_P2_DS_KEY] ?: STARTING_LIFE_POINTS
+        }
+        displayedLifePoints = lifePoints
+        displayedLifePoints2 = lifePoints2
+
+
         if (savedInstanceState == null) {
-            start()
+            // If it's the very first launch (no saved instance state and no datastore values other than defaults)
+            if (lifePoints == 0 && lifePoints2 == STARTING_LIFE_POINTS) {
+                 // Check if it was really 0 or the default from datastore
+                runBlocking {
+                    val preferences = dataStore.data.first()
+                    if (preferences[LIFE_POINTS_P1_DS_KEY] == null) { // Only call start if P1 was not in datastore
+                        start()
+                    }
+                }
+            }
         } else {
-            changeLifePoints(savedInstanceState.getInt(LIFE_POINTS_KEY), 1, false)
-            lifePoints2 = savedInstanceState.getInt(LIFE_POINTS_2_KEY)
+            // Data is already loaded from DataStore, onSaveInstanceState is for in-memory state
+            // We can choose to trust DataStore more or onSaveInstanceState if it exists
+            // For now, let's assume if savedInstanceState exists, it's more current for the active session.
+            lifePoints = savedInstanceState.getInt(LIFE_POINTS_KEY, lifePoints)
+            lifePoints2 = savedInstanceState.getInt(LIFE_POINTS_2_KEY, lifePoints2)
+            displayedLifePoints = lifePoints
             displayedLifePoints2 = lifePoints2
         }
 
@@ -81,8 +122,15 @@ class MainActivity : ComponentActivity() {
     }
 
     fun start() {
-        lifePoints2 = STARTING_LIFE_POINTS
-        displayedLifePoints2 = STARTING_LIFE_POINTS
+        // lifePoints2 is initialized from DataStore or to STARTING_LIFE_POINTS in onCreate
+        // We save it here to ensure it's in DataStore if it was freshly initialized
+        lifecycleScope.launch {
+            dataStore.edit { settings ->
+                settings[LIFE_POINTS_P2_DS_KEY] = lifePoints2
+            }
+        }
+        displayedLifePoints2 = lifePoints2
+
         if (itsTimeToDuelMP == null) {
             itsTimeToDuelMP = MediaPlayer.create(this, R.raw.its_time_to_duel)
             itsTimeToDuelMP?.setOnCompletionListener {
@@ -95,13 +143,22 @@ class MainActivity : ComponentActivity() {
     }
 
     fun restart() {
+        // Reset lifePoints to 0 and save
         lifePoints = 0
+        lifecycleScope.launch {
+            dataStore.edit { settings ->
+                settings[LIFE_POINTS_P1_DS_KEY] = 0 // Player 1 LP reset to 0
+                // We typically reset both players or just player 1, assuming STARTING_LIFE_POINTS for player 2
+                // For now, only explicitly resetting P1 as per original logic's focus on P1 for duel_start sound
+            }
+        }
         displayedLifePoints = 0
+
         if (duelStartMP == null) {
             duelStartMP = MediaPlayer.create(this, R.raw.duel_start)
             duelStartMP?.setOnCompletionListener {
                 stopDuelStart()
-                changeLifePoints(STARTING_LIFE_POINTS, 1)
+                changeLifePoints(STARTING_LIFE_POINTS, 1) // P1 starts with full LP
             }
         }
         duelStartMP?.start()
@@ -112,8 +169,18 @@ class MainActivity : ComponentActivity() {
         if (currentLp != lp) {
             if (player == 1) {
                 lifePoints = lp
+                lifecycleScope.launch {
+                    dataStore.edit { settings ->
+                        settings[LIFE_POINTS_P1_DS_KEY] = lp
+                    }
+                }
             } else {
                 lifePoints2 = lp
+                lifecycleScope.launch {
+                    dataStore.edit { settings ->
+                        settings[LIFE_POINTS_P2_DS_KEY] = lp
+                    }
+                }
             }
             if (playSound) {
                 if (lifePointsChangeMP == null) {
