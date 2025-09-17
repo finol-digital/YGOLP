@@ -2,7 +2,7 @@
 agp = "8.13.0"
 datastorePreferences = "1.1.7"
 horologistComposeLayout = "0.7.15"
-kotlin = "2.2.10"
+kotlin = "2.2.20"
 playServicesWearable = "19.0.0"
 composeBom = "2025.08.01"
 composeMaterial = "1.5.0"
