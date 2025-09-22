@@ -159,7 +159,7 @@ fun CalculatorScreen(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        Spacer(modifier = Modifier.weight(1f))
+                        Spacer(modifier = Modifier.weight(0.5f))
                         OperatorButton(
                             text = operatorTextAndColor.first,
                             modifier = Modifier.weight(1f),
@@ -171,9 +171,15 @@ fun CalculatorScreen(
                             fontSize = 20.sp,
                             color = operatorTextAndColor.second,
                             textAlign = TextAlign.Center,
-                            modifier = Modifier.weight(2f)
+                            modifier = Modifier.weight(1.5f)
                         )
-                        Spacer(modifier = Modifier.weight(1f))
+                        OperatorButton(
+                            text = "1/2",
+                            modifier = Modifier.weight(1f),
+                            color = MaterialTheme.colors.primary,
+                            onClick = { onFinish(lifePoints / 2) }
+                        )
+                        Spacer(modifier = Modifier.weight(0.5f))
                     }
 
                     // Calculator Buttons
