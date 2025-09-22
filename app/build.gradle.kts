@@ -14,8 +14,8 @@ android {
         applicationId = "com.finoldigital.ygolp"
         minSdk = 33
         targetSdk = 36
-        versionCode = 8
-        versionName = "2.3.1"
+        versionCode = 9
+        versionName = "2.4.0"
 
     }
 
