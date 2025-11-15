@@ -98,7 +98,7 @@ fun CalculatorScreen(
 
     fun pop() {
         operandText =
-            if (operandText.length > 1) operandText.substring(0, operandText.length - 1) else "0"
+            if (operandText.length > 1) operandText.dropLast(1) else "0"
     }
 
     fun nextMode() {
@@ -216,9 +216,6 @@ fun CalculatorScreen(
                         CalculatorButton("00") { append("00") }
                         CalculatorButton("000") { append("000") }
                     }
-                    // Spacer to push PlayerIndicator down if Column doesn't fill height
-                    // This might not be needed if Column is .fillMaxSize() and PlayerIndicator is outside it.
-                    // Spacer(Modifier.weight(1f))
                 }
                 PlayerIndicator(
                     modifier = Modifier
