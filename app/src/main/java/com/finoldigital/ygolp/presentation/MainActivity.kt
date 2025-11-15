@@ -23,7 +23,6 @@ import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
 import com.finoldigital.ygolp.R
-import com.finoldigital.ygolp.presentation.theme.WearAppTheme
 import com.google.android.horologist.compose.ambient.AmbientAware
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -68,7 +67,7 @@ class MainActivity : ComponentActivity() {
         if (savedInstanceState == null) {
             // If it's the very first launch (no saved instance state and no datastore values other than defaults)
             if (lifePoints == 0 && lifePoints2 == STARTING_LIFE_POINTS) {
-                 // Check if it was really 0 or the default from datastore
+                // Check if it was really 0 or the default from datastore
                 runBlocking {
                     val preferences = dataStore.data.first()
                     if (preferences[LIFE_POINTS_P1_DS_KEY] == null) { // Only call start if P1 was not in datastore
@@ -261,51 +260,53 @@ class MainActivity : ComponentActivity() {
     fun WearApp() {
         val navController = rememberSwipeDismissableNavController()
 
-        WearAppTheme {
-            AmbientAware { _ ->
-                SwipeDismissableNavHost(
-                    navController = navController,
-                    startDestination = "lifepoints/1" // Start with player 1
-                ) {
-                    composable("lifepoints/{player}") { backStackEntry ->
-                        val player =
-                            backStackEntry.arguments?.getString("player")?.toIntOrNull() ?: 1
-                        if (player == 1) {
-                            LifePointsScreen(
-                                displayedLifePoints = displayedLifePoints,
-                                onShowCalculatorWithMode = { mode -> navController.navigate("calculator/1/$mode") },
-                                onSwipePlayer = { navController.navigate("lifepoints/2") },
-                                playerId = player
-                            )
-                        } else {
-                            LifePointsScreen(
-                                displayedLifePoints = displayedLifePoints2,
-                                onShowCalculatorWithMode = { mode -> navController.navigate("calculator/2/$mode") },
-                                onSwipePlayer = { navController.popBackStack() },
-                                playerId = player
-                            )
-                        }
-                    }
-                    composable(
-                        "calculator/{player}/{initialCalculatorMode}",
-                        arguments = listOf(
-                            navArgument("player") { type = NavType.IntType },
-                            navArgument("initialCalculatorMode") { type = NavType.IntType }
+        AmbientAware { _ ->
+            SwipeDismissableNavHost(
+                navController = navController,
+                startDestination = "lifepoints/1" // Start with player 1
+            ) {
+                composable(
+                    "lifepoints/{player}",
+                    arguments = listOf(
+                        navArgument("player") { type = NavType.IntType }
+                    )
+                ) { backStackEntry ->
+                    val player = backStackEntry.arguments?.getInt("player") ?: 1
+                    if (player == 1) {
+                        LifePointsScreen(
+                            displayedLifePoints = displayedLifePoints,
+                            onShowCalculatorWithMode = { mode -> navController.navigate("calculator/1/$mode") },
+                            onSwipePlayer = { navController.navigate("lifepoints/2") },
+                            playerId = player
                         )
-                    ) { backStackEntry ->
-                        val player = backStackEntry.arguments?.getInt("player") ?: 1
-                        val initialCalculatorMode =
-                            backStackEntry.arguments?.getInt("initialCalculatorMode") ?: 1
-                        val currentLifePoints = if (player == 1) lifePoints else lifePoints2
-                        CalculatorScreen(
-                            currentLifePoints, initialCalculatorMode,
-                            { result ->
-                                changeLifePoints(result, player)
-                                navController.popBackStack()
-                            }, { navController.popBackStack() },
+                    } else {
+                        LifePointsScreen(
+                            displayedLifePoints = displayedLifePoints2,
+                            onShowCalculatorWithMode = { mode -> navController.navigate("calculator/2/$mode") },
+                            onSwipePlayer = { navController.popBackStack() },
                             playerId = player
                         )
                     }
+                }
+                composable(
+                    "calculator/{player}/{initialCalculatorMode}",
+                    arguments = listOf(
+                        navArgument("player") { type = NavType.IntType },
+                        navArgument("initialCalculatorMode") { type = NavType.IntType }
+                    )
+                ) { backStackEntry ->
+                    val player = backStackEntry.arguments?.getInt("player") ?: 1
+                    val initialCalculatorMode =
+                        backStackEntry.arguments?.getInt("initialCalculatorMode") ?: 1
+                    val currentLifePoints = if (player == 1) lifePoints else lifePoints2
+                    CalculatorScreen(
+                        currentLifePoints, initialCalculatorMode,
+                        { result ->
+                            changeLifePoints(result, player)
+                            navController.popBackStack()
+                        }, { navController.popBackStack() },
+                        playerId = player
+                    )
                 }
             }
         }

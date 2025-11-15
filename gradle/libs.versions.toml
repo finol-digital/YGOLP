@@ -1,5 +1,5 @@
 [versions]
-agp = "8.13.0"
+agp = "8.13.1"
 datastorePreferences = "1.1.7"
 horologistComposeLayout = "0.7.15"
 kotlin = "2.2.21"
