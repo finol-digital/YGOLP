@@ -265,9 +265,13 @@ class MainActivity : ComponentActivity() {
                 navController = navController,
                 startDestination = "lifepoints/1" // Start with player 1
             ) {
-                composable("lifepoints/{player}") { backStackEntry ->
-                    val player =
-                        backStackEntry.arguments?.getString("player")?.toIntOrNull() ?: 1
+                composable(
+                    "lifepoints/{player}",
+                    arguments = listOf(
+                        navArgument("player") { type = NavType.IntType }
+                    )
+                ) { backStackEntry ->
+                    val player = backStackEntry.arguments?.getInt("player") ?: 1
                     if (player == 1) {
                         LifePointsScreen(
                             displayedLifePoints = displayedLifePoints,
