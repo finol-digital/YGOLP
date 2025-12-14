@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -125,12 +126,6 @@ fun LifePointsScreen(
     }
 }
 
-// Helper function to get string resource within a Composable
-@Composable
-fun getString(resId: Int): String {
-    return androidx.compose.ui.platform.LocalContext.current.getString(resId)
-}
-
 @Composable
 fun LifePointsText(displayedLifePoints: Int) {
     Box(
@@ -138,7 +133,7 @@ fun LifePointsText(displayedLifePoints: Int) {
         contentAlignment = Alignment.Center
     ) {
         val lifePointsText =
-            if (displayedLifePoints > 0) displayedLifePoints.toString() else getString(R.string.app_name)
+            if (displayedLifePoints > 0) displayedLifePoints.toString() else stringResource(R.string.app_name)
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
