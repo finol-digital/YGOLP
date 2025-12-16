@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() {
 
         if (savedInstanceState == null) {
             // If it's the very first launch (no saved instance state and no datastore values other than defaults)
-            if (lifePoints == 0 && lifePoints2 == STARTING_LIFE_POINTS) {
+            if (lifePoints == 0 && lifePoints2 == 0) {
                 // Check if it was really 0 or the default from datastore
                 runBlocking {
                     val preferences = dataStore.data.first()
