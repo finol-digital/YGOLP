@@ -57,11 +57,13 @@ fun LifePointsScreen(
     onShowCalculatorWithMode: (Int) -> Unit,
     onSwipePlayer: () -> Unit,
     playerId: Int = 1,
+    onRestart: (() -> Unit)? = null,
 ) {
+    val isLost = displayedLifePoints <= 0 && onRestart != null
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Transparent) // Changed to Transparent to see PlayerIndicator if background image is not full
+            .background(Color.Transparent)
             .pointerInput(Unit) {
                 detectHorizontalDragGestures { change, dragAmount ->
                     change.consume()
@@ -72,6 +74,7 @@ fun LifePointsScreen(
                     }
                 }
             }
+            .then(if (isLost) Modifier.clickable { onRestart() } else Modifier)
     ) {
         if (playerId == 1) {
             Image(
@@ -95,25 +98,27 @@ fun LifePointsScreen(
             ) // Gradient background for P2
         }
 
-        Column(modifier = Modifier.fillMaxSize()) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .clickable { onShowCalculatorWithMode(2) } // Decrease LP
-            )
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .clickable { onShowCalculatorWithMode(0) } // Set LP
-            )
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .clickable { onShowCalculatorWithMode(1) } // Increase LP
-            )
+        if (!isLost) {
+            Column(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable { onShowCalculatorWithMode(2) } // Decrease LP
+                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable { onShowCalculatorWithMode(0) } // Set LP
+                )
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .clickable { onShowCalculatorWithMode(1) } // Increase LP
+                )
+            }
         }
         LifePointsText(displayedLifePoints)
 

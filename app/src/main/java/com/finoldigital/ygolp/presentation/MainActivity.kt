@@ -58,7 +58,7 @@ class MainActivity : ComponentActivity() {
         runBlocking { // Use runBlocking for simplicity in onCreate
             val preferences = dataStore.data.first()
             lifePoints = preferences[LIFE_POINTS_P1_DS_KEY] ?: 0
-            lifePoints2 = preferences[LIFE_POINTS_P2_DS_KEY] ?: STARTING_LIFE_POINTS
+            lifePoints2 = preferences[LIFE_POINTS_P2_DS_KEY] ?: 0
         }
         displayedLifePoints = lifePoints
         displayedLifePoints2 = lifePoints2
@@ -121,15 +121,6 @@ class MainActivity : ComponentActivity() {
     }
 
     fun start() {
-        // lifePoints2 is initialized from DataStore or to STARTING_LIFE_POINTS in onCreate
-        // We save it here to ensure it's in DataStore if it was freshly initialized
-        lifecycleScope.launch {
-            dataStore.edit { settings ->
-                settings[LIFE_POINTS_P2_DS_KEY] = lifePoints2
-            }
-        }
-        displayedLifePoints2 = lifePoints2
-
         if (itsTimeToDuelMP == null) {
             itsTimeToDuelMP = MediaPlayer.create(this, R.raw.its_time_to_duel)
             itsTimeToDuelMP?.setOnCompletionListener {
@@ -142,22 +133,24 @@ class MainActivity : ComponentActivity() {
     }
 
     fun restart() {
-        // Reset lifePoints to 0 and save
+        // Reset lifePoints and save
         lifePoints = 0
+        lifePoints2 = 0
         lifecycleScope.launch {
             dataStore.edit { settings ->
-                settings[LIFE_POINTS_P1_DS_KEY] = 0 // Player 1 LP reset to 0
-                // We typically reset both players or just player 1, assuming STARTING_LIFE_POINTS for player 2
-                // For now, only explicitly resetting P1 as per original logic's focus on P1 for duel_start sound
+                settings[LIFE_POINTS_P1_DS_KEY] = 0
+                settings[LIFE_POINTS_P2_DS_KEY] = 0
             }
         }
         displayedLifePoints = 0
+        displayedLifePoints2 = 0
 
         if (duelStartMP == null) {
             duelStartMP = MediaPlayer.create(this, R.raw.duel_start)
             duelStartMP?.setOnCompletionListener {
                 stopDuelStart()
-                changeLifePoints(STARTING_LIFE_POINTS, 1) // P1 starts with full LP
+                changeLifePoints(STARTING_LIFE_POINTS, 1)
+                changeLifePoints(STARTING_LIFE_POINTS, 2)
             }
         }
         duelStartMP?.start()
@@ -277,14 +270,16 @@ class MainActivity : ComponentActivity() {
                             displayedLifePoints = displayedLifePoints,
                             onShowCalculatorWithMode = { mode -> navController.navigate("calculator/1/$mode") },
                             onSwipePlayer = { navController.navigate("lifepoints/2") },
-                            playerId = player
+                            playerId = player,
+                            onRestart = if (displayedLifePoints <= 0) ({ start() }) else null
                         )
                     } else {
                         LifePointsScreen(
                             displayedLifePoints = displayedLifePoints2,
                             onShowCalculatorWithMode = { mode -> navController.navigate("calculator/2/$mode") },
                             onSwipePlayer = { navController.popBackStack() },
-                            playerId = player
+                            playerId = player,
+                            onRestart = if (displayedLifePoints2 <= 0) ({ start() }) else null
                         )
                     }
                 }
