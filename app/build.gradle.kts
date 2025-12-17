@@ -14,8 +14,8 @@ android {
         applicationId = "com.finoldigital.ygolp"
         minSdk = 33
         targetSdk = 36
-        versionCode = 10
-        versionName = "2.5.1"
+        versionCode = 11
+        versionName = "2.6.0"
 
     }
 
@@ -61,7 +61,7 @@ dependencies {
     implementation(libs.datastore.preferences)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
-    androidTestImplementation(libs.espresso.core) // Added Espresso
+    androidTestImplementation(libs.espresso.core)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
 }
