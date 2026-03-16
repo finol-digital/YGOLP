@@ -1,6 +1,6 @@
 [versions]
 agp = "9.1.0"
-datastorePreferences = "1.2.0"
+datastorePreferences = "1.2.1"
 horologistComposeLayout = "0.7.15"
 kotlin = "2.3.10"
 playServicesWearable = "19.0.0"
