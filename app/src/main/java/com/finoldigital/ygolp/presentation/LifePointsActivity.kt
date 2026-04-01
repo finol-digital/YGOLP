@@ -161,7 +161,7 @@ fun LifePointsText(displayedLifePoints: Int) {
         contentAlignment = Alignment.Center
     ) {
         val lifePointsText =
-            if (displayedLifePoints > 0) displayedLifePoints.toString() else 0.toString()
+            if (displayedLifePoints > 0) displayedLifePoints.toString() else "0"
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
