@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.core.splashscreen)
     implementation(libs.compose.ui.tooling)
+    implementation(libs.material.icons.extended)
     implementation(libs.horologist.compose.layout)
     implementation(libs.datastore.preferences)
     androidTestImplementation(platform(libs.compose.bom))

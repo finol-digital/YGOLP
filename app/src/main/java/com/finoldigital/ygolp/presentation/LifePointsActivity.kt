@@ -12,6 +12,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.VolumeOff
+import androidx.compose.material.icons.automirrored.filled.VolumeUp
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,12 +24,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
@@ -58,6 +62,8 @@ fun LifePointsScreen(
     onSwipePlayer: () -> Unit,
     playerId: Int = 1,
     onRestart: (() -> Unit)? = null,
+    isMuted: Boolean = false,
+    onToggleMute: () -> Unit = {},
 ) {
     val isLost = displayedLifePoints <= 0 && onRestart != null
     Box(
@@ -128,6 +134,23 @@ fun LifePointsScreen(
                 .padding(bottom = 16.dp), // Adjust padding as needed
             playerId = playerId
         )
+
+        // Mute/Unmute toggle button at top center
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 4.dp)
+                .size(48.dp)
+                .clickable { onToggleMute() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                contentDescription = if (isMuted) "Unmute" else "Mute",
+                tint = Color.White.copy(alpha = 0.7f),
+                modifier = Modifier.size(32.dp)
+            )
+        }
     }
 }
 
@@ -138,7 +161,7 @@ fun LifePointsText(displayedLifePoints: Int) {
         contentAlignment = Alignment.Center
     ) {
         val lifePointsText =
-            if (displayedLifePoints > 0) displayedLifePoints.toString() else stringResource(R.string.app_name)
+            if (displayedLifePoints > 0) displayedLifePoints.toString() else 0.toString()
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,

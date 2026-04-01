@@ -26,7 +26,7 @@ Losing or gaining life causes the classic animation and sound effects.
 Swipe left and right to navigate between 2 different players.
 
 Tap on the top 3rd of the screen to enter the gain life calculator.
-Tap on the center of the screen to enter the set life total calculator.
+Tap in the center of the screen to enter the set life total calculator.
 Tap on the bottom 3rd of the screen to enter the reduce life total calculator.
 
 In the calculator, you can toggle between the 3 modes by pressing the operator button.

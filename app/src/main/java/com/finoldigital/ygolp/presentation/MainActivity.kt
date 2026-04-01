@@ -10,9 +10,11 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -40,12 +42,14 @@ class MainActivity : ComponentActivity() {
     companion object {
         val LIFE_POINTS_P1_DS_KEY = intPreferencesKey("life_points_p1")
         val LIFE_POINTS_P2_DS_KEY = intPreferencesKey("life_points_p2")
+        val IS_MUTED_DS_KEY = booleanPreferencesKey("is_muted")
     }
 
     private var lifePoints by mutableIntStateOf(0)
     private var displayedLifePoints by mutableIntStateOf(0)
     private var lifePoints2 by mutableIntStateOf(0)
     private var displayedLifePoints2 by mutableIntStateOf(0)
+    private var isMuted by mutableStateOf(false)
 
     private var duelStartMP: MediaPlayer? = null
     private var lifePointsChangeMP: MediaPlayer? = null
@@ -59,6 +63,7 @@ class MainActivity : ComponentActivity() {
             val preferences = dataStore.data.first()
             lifePoints = preferences[LIFE_POINTS_P1_DS_KEY] ?: 0
             lifePoints2 = preferences[LIFE_POINTS_P2_DS_KEY] ?: 0
+            isMuted = preferences[IS_MUTED_DS_KEY] ?: false
         }
         displayedLifePoints = lifePoints
         displayedLifePoints2 = lifePoints2
@@ -121,6 +126,10 @@ class MainActivity : ComponentActivity() {
     }
 
     fun start() {
+        if (isMuted) {
+            restart()
+            return
+        }
         if (itsTimeToDuelMP == null) {
             itsTimeToDuelMP = MediaPlayer.create(this, R.raw.its_time_to_duel)
             itsTimeToDuelMP?.setOnCompletionListener {
@@ -130,6 +139,15 @@ class MainActivity : ComponentActivity() {
             }
         }
         itsTimeToDuelMP?.start()
+    }
+
+    fun toggleMute() {
+        isMuted = !isMuted
+        lifecycleScope.launch {
+            dataStore.edit { settings ->
+                settings[IS_MUTED_DS_KEY] = isMuted
+            }
+        }
     }
 
     fun restart() {
@@ -144,6 +162,12 @@ class MainActivity : ComponentActivity() {
         }
         displayedLifePoints = 0
         displayedLifePoints2 = 0
+
+        if (isMuted) {
+            changeLifePoints(STARTING_LIFE_POINTS, 1, playSound = false)
+            changeLifePoints(STARTING_LIFE_POINTS, 2, playSound = false)
+            return
+        }
 
         if (duelStartMP == null) {
             duelStartMP = MediaPlayer.create(this, R.raw.duel_start)
@@ -174,7 +198,7 @@ class MainActivity : ComponentActivity() {
                     }
                 }
             }
-            if (playSound) {
+            if (playSound && !isMuted) {
                 if (lifePointsChangeMP == null) {
                     lifePointsChangeMP = MediaPlayer.create(this, R.raw.lifepoints_change)
                     lifePointsChangeMP?.setOnCompletionListener {
@@ -212,6 +236,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startItsTimeToDuel() {
+        if (isMuted) return
         if (itsTimeToDuelMP == null) {
             itsTimeToDuelMP = MediaPlayer.create(this, R.raw.its_time_to_duel)
             itsTimeToDuelMP?.setOnCompletionListener {
@@ -271,7 +296,9 @@ class MainActivity : ComponentActivity() {
                             onShowCalculatorWithMode = { mode -> navController.navigate("calculator/1/$mode") },
                             onSwipePlayer = { navController.navigate("lifepoints/2") },
                             playerId = player,
-                            onRestart = if (displayedLifePoints <= 0) ({ start() }) else null
+                            onRestart = if (displayedLifePoints <= 0) ({ start() }) else null,
+                            isMuted = isMuted,
+                            onToggleMute = { toggleMute() }
                         )
                     } else {
                         LifePointsScreen(
@@ -279,7 +306,9 @@ class MainActivity : ComponentActivity() {
                             onShowCalculatorWithMode = { mode -> navController.navigate("calculator/2/$mode") },
                             onSwipePlayer = { navController.popBackStack() },
                             playerId = player,
-                            onRestart = if (displayedLifePoints2 <= 0) ({ start() }) else null
+                            onRestart = if (displayedLifePoints2 <= 0) ({ start() }) else null,
+                            isMuted = isMuted,
+                            onToggleMute = { toggleMute() }
                         )
                     }
                 }
