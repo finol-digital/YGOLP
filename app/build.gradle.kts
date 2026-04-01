@@ -14,7 +14,7 @@ android {
         minSdk = 33
         targetSdk = 36
         versionCode = 11
-        versionName = "2.6.0"
+        versionName = "2.7.0"
 
     }
 
@@ -56,6 +56,7 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.core.splashscreen)
     implementation(libs.compose.ui.tooling)
+    implementation(libs.material.icons.extended)
     implementation(libs.horologist.compose.layout)
     implementation(libs.datastore.preferences)
     androidTestImplementation(platform(libs.compose.bom))
