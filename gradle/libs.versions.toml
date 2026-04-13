@@ -10,7 +10,7 @@ composeFoundation = "1.6.0"
 wearToolingPreview = "1.0.0"
 activityCompose = "1.13.0"
 coreSplashscreen = "1.2.0"
-composeUiTooling = "1.6.0"
+composeUiTooling = "1.6.1"
 espressoCore = "3.7.0"
 
 [libraries]
