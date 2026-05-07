@@ -39,6 +39,7 @@ import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 
 const val EXTRA_CALCULATOR_MODE = "com.finoldigital.ygolp.EXTRA_CALCULATOR_MODE"
+const val EXTRA_PLAYER_ID = "com.finoldigital.ygolp.EXTRA_PLAYER_ID"
 
 class CalculatorActivity : ComponentActivity() {
 
@@ -47,7 +48,7 @@ class CalculatorActivity : ComponentActivity() {
 
         val initialLifePoints = intent.getIntExtra(EXTRA_LIFE_POINTS, STARTING_LIFE_POINTS)
         val initialCalculatorMode = intent.getIntExtra(EXTRA_CALCULATOR_MODE, 0)
-        val playerId = intent.getIntExtra("PLAYER_ID_KEY", 1)
+        val playerId = intent.getIntExtra(EXTRA_PLAYER_ID, 1)
 
         setContent {
             CalculatorScreen(
