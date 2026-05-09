@@ -35,31 +35,32 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 
+const val INITIAL_CALCULATOR_MODE = CalculatorMode.SET
 
 @Composable
 fun CalculatorScreen(
-    initialLifePoints: Int,
-    initialCalculatorMode: Int,
-    onFinish: (Int) -> Unit,
-    onCancel: () -> Unit,
-    playerId: Int = 1
+    playerId: Int = PLAYER_1,
+    initialCalculatorMode: Int = INITIAL_CALCULATOR_MODE,
+    initialLifePoints: Int = INITIAL_LIFE_POINTS,
+    onDiscard: () -> Unit = {},
+    onSubmit: (Int) -> Unit = {},
 ) {
-    var calculatorMode by remember { mutableIntStateOf(initialCalculatorMode) } // 0:=> 1:- 2:+
+    var calculatorMode by remember { mutableIntStateOf(initialCalculatorMode) } // 0:SET 1:SUBTRACT 2:ADD
     val operatorTextAndColor = remember(calculatorMode) {
         when (calculatorMode) {
-            2 -> "+" to Color.Green
-            1 -> "-" to Color.Red
-            else -> "=>" to Color.Yellow // 0
+            CalculatorMode.ADD -> "+" to Color.Green
+            CalculatorMode.SUBTRACT -> "-" to Color.Red
+            else -> "=>" to Color.Yellow // SET
         }
     }
     var operandText by remember { mutableStateOf("0") }
     val result = remember(initialLifePoints, calculatorMode, operandText) {
         val operand = operandText.toIntOrNull() ?: 0
         when (calculatorMode) {
-            2 -> initialLifePoints + operand
-            1 -> initialLifePoints - operand
-            else -> operand // 0
-        }.coerceIn(0, 99999)
+            CalculatorMode.ADD -> initialLifePoints + operand
+            CalculatorMode.SUBTRACT -> initialLifePoints - operand
+            else -> operand // SET
+        }.coerceIn(0, MAX_LIFE_POINTS)
     }
 
     fun append(char: String) {
@@ -79,7 +80,7 @@ fun CalculatorScreen(
     }
 
     fun submit() {
-        onFinish(result)
+        onSubmit(result)
     }
 
     val focusRequester = remember { FocusRequester() }
@@ -97,7 +98,7 @@ fun CalculatorScreen(
                             }
 
                             KeyEvent.KEYCODE_STEM_2 -> {
-                                onCancel()
+                                onDiscard()
                                 true
                             }
 
@@ -150,7 +151,7 @@ fun CalculatorScreen(
                         text = "1/2",
                         modifier = Modifier.weight(1f),
                         color = MaterialTheme.colors.primary,
-                        onClick = { onFinish(initialLifePoints / 2) }
+                        onClick = { onSubmit(initialLifePoints / 2) }
                     )
                     Spacer(modifier = Modifier.weight(0.5f))
                 }
@@ -171,7 +172,7 @@ fun CalculatorScreen(
                     CalculatorButton(
                         "X",
                         color = MaterialTheme.colors.error
-                    ) { onCancel() }
+                    ) { onDiscard() }
                 }
                 // Row 3
                 FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
@@ -242,5 +243,5 @@ fun CalculatorButton(
 @WearPreviewFontScales
 @Composable
 fun CalculatorScreenPreview() {
-    CalculatorScreen(STARTING_LIFE_POINTS, 0, onFinish = {}, onCancel = {}, playerId = 1)
+    CalculatorScreen()
 }

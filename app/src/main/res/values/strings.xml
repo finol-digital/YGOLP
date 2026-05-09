@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">YGOLP</string>
+    <string name="bg_player_1">Background for Player 1</string>
+    <string name="unmute">Unmute</string>
+    <string name="mute">Mute</string>
+    <string name="zero">0</string>
 </resources>

@@ -15,6 +15,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 
+const val PLAYER_1 = 1
+const val PLAYER_2 = 2
+
 @Composable
 fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
     Row(
@@ -36,7 +39,7 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
             )
         ) {
             val cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
-            if (playerId == 1) {
+            if (playerId == PLAYER_1) {
                 drawRoundRect(
                     color = indicatorColor,
                     cornerRadius = cornerRadius
@@ -60,7 +63,7 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
             )
         ) {
             val cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
-            if (playerId == 2) {
+            if (playerId == PLAYER_2) {
                 drawRoundRect(
                     color = indicatorColor,
                     cornerRadius = cornerRadius

@@ -1,7 +1,6 @@
 package com.finoldigital.ygolp.presentation
 
-import android.annotation.SuppressLint
-import android.content.Context
+import android.app.Application
 import android.os.CountDownTimer
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
@@ -9,6 +8,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -16,17 +16,16 @@ import com.finoldigital.ygolp.R
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "lifepoints_settings")
+private val Application.dataStore: DataStore<Preferences> by preferencesDataStore(name = "lifepoints_settings")
 
-@SuppressLint("StaticFieldLeak") // Always holds applicationContext via Factory, not an Activity
 class MainViewModel(
-    private val context: Context,
-    val soundManager: SoundManager
-) : ViewModel() {
+    application: Application,
+    private val soundManager: SoundManager
+) : AndroidViewModel(application) {
 
     companion object {
         val LIFE_POINTS_P1_DS_KEY = intPreferencesKey("life_points_p1")
@@ -55,20 +54,27 @@ class MainViewModel(
 
     init {
         viewModelScope.launch {
-            val preferences = context.dataStore.data.first()
-            val p1 = preferences[LIFE_POINTS_P1_DS_KEY]
-            val p2 = preferences[LIFE_POINTS_P2_DS_KEY]
-            _isMuted.value = preferences[IS_MUTED_DS_KEY] ?: false
-            soundManager.isMuted = _isMuted.value
+            getApplication<Application>().dataStore.data.collectLatest { preferences ->
+                val p1 = preferences[LIFE_POINTS_P1_DS_KEY]
+                val p2 = preferences[LIFE_POINTS_P2_DS_KEY]
+                _isMuted.value = preferences[IS_MUTED_DS_KEY] ?: false
+                soundManager.isMuted = _isMuted.value
 
-            if (p1 != null) {
-                _lifePoints.value = p1
-                _lifePoints2.value = p2 ?: 0
-                _displayedLifePoints.value = _lifePoints.value
-                _displayedLifePoints2.value = _lifePoints2.value
-            } else {
-                // First launch — trigger start
-                start()
+                if (p1 != null) {
+                    _lifePoints.value = p1
+                    _lifePoints2.value = p2 ?: 0
+                    
+                    // Only update displayed if no timer is running to avoid jumpiness during collection
+                    if (countDownTimerP1 == null) {
+                        _displayedLifePoints.value = _lifePoints.value
+                    }
+                    if (countDownTimerP2 == null) {
+                        _displayedLifePoints2.value = _lifePoints2.value
+                    }
+                } else if (_lifePoints.value == 0 && _lifePoints2.value == 0) {
+                    // First launch — trigger start if we haven't already started
+                    start()
+                }
             }
         }
     }
@@ -84,36 +90,33 @@ class MainViewModel(
     }
 
     fun toggleMute() {
-        _isMuted.value = !_isMuted.value
-        soundManager.isMuted = _isMuted.value
+        val nextMuted = !_isMuted.value
+        _isMuted.value = nextMuted
+        soundManager.isMuted = nextMuted
         viewModelScope.launch {
-            context.dataStore.edit { settings ->
-                settings[IS_MUTED_DS_KEY] = _isMuted.value
+            getApplication<Application>().dataStore.edit { settings ->
+                settings[IS_MUTED_DS_KEY] = nextMuted
             }
         }
     }
 
     fun restart() {
-        _lifePoints.value = 0
-        _lifePoints2.value = 0
-        _displayedLifePoints.value = 0
-        _displayedLifePoints2.value = 0
         viewModelScope.launch {
-            context.dataStore.edit { settings ->
+            getApplication<Application>().dataStore.edit { settings ->
                 settings[LIFE_POINTS_P1_DS_KEY] = 0
                 settings[LIFE_POINTS_P2_DS_KEY] = 0
             }
         }
 
         if (_isMuted.value) {
-            changeLifePoints(STARTING_LIFE_POINTS, 1, playSound = false)
-            changeLifePoints(STARTING_LIFE_POINTS, 2, playSound = false)
+            changeLifePoints(INITIAL_LIFE_POINTS, PLAYER_1, playSound = false)
+            changeLifePoints(INITIAL_LIFE_POINTS, PLAYER_2, playSound = false)
             return
         }
 
         soundManager.play(R.raw.duel_start) {
-            changeLifePoints(STARTING_LIFE_POINTS, 1)
-            changeLifePoints(STARTING_LIFE_POINTS, 2)
+            changeLifePoints(INITIAL_LIFE_POINTS, PLAYER_1)
+            changeLifePoints(INITIAL_LIFE_POINTS, PLAYER_2)
         }
     }
 
@@ -124,19 +127,13 @@ class MainViewModel(
 
     fun changeLifePoints(lp: Int, player: Int, playSound: Boolean = true) {
         val clampedLp = lp.coerceIn(0, 99999)
-        val currentLp = if (player == 1) _lifePoints.value else _lifePoints2.value
+        val currentLp = if (player == PLAYER_1) _lifePoints.value else _lifePoints2.value
         if (currentLp != clampedLp) {
-            if (player == 1) {
-                _lifePoints.value = clampedLp
-                viewModelScope.launch {
-                    context.dataStore.edit { settings ->
+            viewModelScope.launch {
+                getApplication<Application>().dataStore.edit { settings ->
+                    if (player == 1) {
                         settings[LIFE_POINTS_P1_DS_KEY] = clampedLp
-                    }
-                }
-            } else {
-                _lifePoints2.value = clampedLp
-                viewModelScope.launch {
-                    context.dataStore.edit { settings ->
+                    } else {
                         settings[LIFE_POINTS_P2_DS_KEY] = clampedLp
                     }
                 }
@@ -146,10 +143,12 @@ class MainViewModel(
             }
 
             // Cancel any existing timer for this player
-            if (player == 1) {
+            if (player == PLAYER_1) {
                 countDownTimerP1?.cancel()
+                countDownTimerP1 = null
             } else {
                 countDownTimerP2?.cancel()
+                countDownTimerP2 = null
             }
 
             val timer = object : CountDownTimer(if (playSound) 2100 else 0, 50) {
@@ -163,25 +162,22 @@ class MainViewModel(
                 }
 
                 override fun onFinish() {
-                    if (player == 1) {
+                    if (player == PLAYER_1) {
                         _displayedLifePoints.value = _lifePoints.value
+                        countDownTimerP1 = null
                     } else {
                         _displayedLifePoints2.value = _lifePoints2.value
+                        countDownTimerP2 = null
                     }
                 }
             }
 
-            if (player == 1) {
+            if (player == PLAYER_1) {
                 countDownTimerP1 = timer
             } else {
                 countDownTimerP2 = timer
             }
             timer.start()
-        }
-        if (player == 1) {
-            _displayedLifePoints.value = _lifePoints.value
-        } else {
-            _displayedLifePoints2.value = _lifePoints2.value
         }
     }
 
@@ -192,12 +188,12 @@ class MainViewModel(
     }
 
     class Factory(
-        private val context: Context,
+        private val application: Application,
         private val soundManager: SoundManager
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return MainViewModel(context.applicationContext, soundManager) as T
+            return MainViewModel(application, soundManager) as T
         }
     }
 }

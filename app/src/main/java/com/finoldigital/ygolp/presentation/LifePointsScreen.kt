@@ -21,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -32,18 +33,18 @@ import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 import com.finoldigital.ygolp.R
 
-const val STARTING_LIFE_POINTS = 8000
-
+const val INITIAL_LIFE_POINTS = 8000
+const val MAX_LIFE_POINTS = 99999
 
 @Composable
 fun LifePointsScreen(
-    displayedLifePoints: Int,
-    onShowCalculatorWithMode: (Int) -> Unit,
-    onSwipePlayer: () -> Unit,
-    playerId: Int = 1,
-    onRestart: (() -> Unit)? = null,
+    playerId: Int = PLAYER_1,
+    displayedLifePoints: Int = INITIAL_LIFE_POINTS,
     isMuted: Boolean = false,
     onToggleMute: () -> Unit = {},
+    onShowCalculatorWithMode: (Int) -> Unit = {},
+    onSwipePlayer: () -> Unit = {},
+    onRestart: (() -> Unit)? = null,
 ) {
     val isLost = displayedLifePoints <= 0 && onRestart != null
     Box(
@@ -59,8 +60,8 @@ fun LifePointsScreen(
                     onHorizontalDrag = { change, dragAmount ->
                         change.consume()
                         if (!swipeHandled) {
-                            if ((playerId == 1 && dragAmount < 0) // Player 1 swipe left
-                                || (playerId == 2 && dragAmount > 0) // Player 2 swipe right
+                            if ((playerId == PLAYER_1 && dragAmount < 0) // Player 1 swipe left
+                                || (playerId == PLAYER_2 && dragAmount > 0) // Player 2 swipe right
                             ) {
                                 swipeHandled = true
                                 onSwipePlayer()
@@ -71,12 +72,12 @@ fun LifePointsScreen(
             }
             .then(if (isLost) Modifier.clickable { onRestart() } else Modifier)
     ) {
-        if (playerId == 1) {
+        if (playerId == PLAYER_1) {
             Image(
                 painterResource(R.drawable.lifepoints_background),
-                contentDescription = "Background for Player 1",
-                contentScale = ContentScale.FillBounds,
-                modifier = Modifier.fillMaxSize()
+                contentDescription = stringResource(R.string.bg_player_1),
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillBounds
             )
         } else {
             Box(
@@ -99,19 +100,19 @@ fun LifePointsScreen(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(2) } // Decrease LP
+                        .clickable { onShowCalculatorWithMode(CalculatorMode.SUBTRACT) }
                 )
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(0) } // Set LP
+                        .clickable { onShowCalculatorWithMode(CalculatorMode.SET) }
                 )
                 Box(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(1) } // Increase LP
+                        .clickable { onShowCalculatorWithMode(CalculatorMode.ADD) }
                 )
             }
         }
@@ -120,7 +121,7 @@ fun LifePointsScreen(
         PlayerIndicator(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp), // Adjust padding as needed
+                .padding(bottom = 16.dp),
             playerId = playerId
         )
 
@@ -135,7 +136,7 @@ fun LifePointsScreen(
         ) {
             Icon(
                 imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
-                contentDescription = if (isMuted) "Unmute" else "Mute",
+                contentDescription = if (isMuted) stringResource(R.string.unmute) else stringResource(R.string.mute),
                 tint = Color.White.copy(alpha = 0.7f),
                 modifier = Modifier.size(32.dp)
             )
@@ -150,7 +151,7 @@ fun LifePointsText(displayedLifePoints: Int) {
         contentAlignment = Alignment.Center
     ) {
         val lifePointsText =
-            if (displayedLifePoints > 0) displayedLifePoints.toString() else "0"
+            if (displayedLifePoints > 0) displayedLifePoints.toString() else stringResource(R.string.zero)
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
@@ -166,12 +167,12 @@ fun LifePointsText(displayedLifePoints: Int) {
 @WearPreviewFontScales
 @Composable
 fun LifePointsScreenPreview() {
-    LifePointsScreen(STARTING_LIFE_POINTS, {}, {}, playerId = 1)
+    LifePointsScreen()
 }
 
 @WearPreviewDevices
 @WearPreviewFontScales
 @Composable
 fun LifePointsScreenPreview2() {
-    LifePointsScreen(STARTING_LIFE_POINTS, {}, {}, playerId = 2)
+    LifePointsScreen(PLAYER_2)
 }
