@@ -1,9 +1,6 @@
 package com.finoldigital.ygolp.presentation
 
-import android.os.Bundle
 import android.view.KeyEvent
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -38,29 +35,6 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 
-const val EXTRA_CALCULATOR_MODE = "com.finoldigital.ygolp.EXTRA_CALCULATOR_MODE"
-const val EXTRA_PLAYER_ID = "com.finoldigital.ygolp.EXTRA_PLAYER_ID"
-
-class CalculatorActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val initialLifePoints = intent.getIntExtra(EXTRA_LIFE_POINTS, STARTING_LIFE_POINTS)
-        val initialCalculatorMode = intent.getIntExtra(EXTRA_CALCULATOR_MODE, 0)
-        val playerId = intent.getIntExtra(EXTRA_PLAYER_ID, 1)
-
-        setContent {
-            CalculatorScreen(
-                initialLifePoints = initialLifePoints,
-                initialCalculatorMode = initialCalculatorMode,
-                onFinish = { /* do nothing */ },
-                onCancel = { /* do nothing */ },
-                playerId = playerId
-            )
-        }
-    }
-}
 
 @Composable
 fun CalculatorScreen(
@@ -85,7 +59,7 @@ fun CalculatorScreen(
             2 -> initialLifePoints + operand
             1 -> initialLifePoints - operand
             else -> operand // 0
-        }
+        }.coerceIn(0, 99999)
     }
 
     fun append(char: String) {

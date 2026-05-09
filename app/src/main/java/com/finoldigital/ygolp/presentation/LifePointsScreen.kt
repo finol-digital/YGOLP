@@ -1,8 +1,5 @@
 package com.finoldigital.ygolp.presentation
 
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -35,25 +32,8 @@ import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 import com.finoldigital.ygolp.R
 
-const val EXTRA_LIFE_POINTS = "com.finoldigital.ygolp.EXTRA_LIFE_POINTS"
 const val STARTING_LIFE_POINTS = 8000
 
-class LifePointsActivity : ComponentActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val displayedLifePoints = intent.getIntExtra(EXTRA_LIFE_POINTS, STARTING_LIFE_POINTS)
-
-        setContent {
-            LifePointsScreen(
-                displayedLifePoints = displayedLifePoints,
-                onShowCalculatorWithMode = { /* do nothing */ },
-                onSwipePlayer = { /* do nothing */ }
-            )
-        }
-    }
-}
 
 @Composable
 fun LifePointsScreen(
@@ -71,14 +51,23 @@ fun LifePointsScreen(
             .fillMaxSize()
             .background(Color.Transparent)
             .pointerInput(Unit) {
-                detectHorizontalDragGestures { change, dragAmount ->
-                    change.consume()
-                    if ((playerId == 1 && dragAmount < 0) // Player 1 swipe left
-                        || (playerId == 2 && dragAmount > 0) // Player 2 swipe right
-                    ) {
-                        onSwipePlayer()
+                var swipeHandled = false
+                detectHorizontalDragGestures(
+                    onDragStart = { swipeHandled = false },
+                    onDragEnd = { swipeHandled = false },
+                    onDragCancel = { swipeHandled = false },
+                    onHorizontalDrag = { change, dragAmount ->
+                        change.consume()
+                        if (!swipeHandled) {
+                            if ((playerId == 1 && dragAmount < 0) // Player 1 swipe left
+                                || (playerId == 2 && dragAmount > 0) // Player 2 swipe right
+                            ) {
+                                swipeHandled = true
+                                onSwipePlayer()
+                            }
+                        }
                     }
-                }
+                )
             }
             .then(if (isLost) Modifier.clickable { onRestart() } else Modifier)
     ) {
@@ -165,7 +154,7 @@ fun LifePointsText(displayedLifePoints: Int) {
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
-            color = Color(0xFFFBFF0C.toInt()),
+            color = Color(0xFFFBFF0C),
             fontFamily = FontFamily(Font(R.font.nationalyze_alp)),
             fontSize = 32.sp,
             text = lifePointsText

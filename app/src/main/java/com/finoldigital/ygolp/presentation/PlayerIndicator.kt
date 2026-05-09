@@ -23,7 +23,6 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         val indicatorColor = Color.White
-        val cornerRadius = CornerRadius(4.dp.value, 4.dp.value)
         val indicatorSize =
             DpSize(width = 12.dp, height = 6.dp) // Adjusted size, now uses framework DpSize
         val indicatorPadding = 4.dp // Padding between indicators
@@ -36,6 +35,7 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
                 height = indicatorSize.height
             )
         ) {
+            val cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
             if (playerId == 1) {
                 drawRoundRect(
                     color = indicatorColor,
@@ -59,6 +59,7 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
                 height = indicatorSize.height
             )
         ) {
+            val cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
             if (playerId == 2) {
                 drawRoundRect(
                     color = indicatorColor,
