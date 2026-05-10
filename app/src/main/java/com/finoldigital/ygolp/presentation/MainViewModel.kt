@@ -57,6 +57,7 @@ class MainViewModel(
 
     private var animationJobP1: Job? = null
     private var animationJobP2: Job? = null
+    private var started = false
 
     init {
         viewModelScope.launch {
@@ -77,7 +78,7 @@ class MainViewModel(
                     if (animationJobP2?.isActive != true) {
                         _displayedLifePoints2.value = _lifePoints2.value
                     }
-                } else if (_lifePoints.value == 0 && _lifePoints2.value == 0) {
+                } else if (!started && _lifePoints.value == 0 && _lifePoints2.value == 0) {
                     // First launch — trigger start if we haven't already started
                     start()
                 }
@@ -86,6 +87,7 @@ class MainViewModel(
     }
 
     fun start() {
+        started = true
         if (_isMuted.value) {
             restart()
             return
