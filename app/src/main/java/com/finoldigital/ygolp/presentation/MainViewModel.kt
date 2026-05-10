@@ -174,7 +174,7 @@ class MainViewModel(
             }
 
             val startLp = if (player == Player.ONE) _displayedLifePoints.value else _displayedLifePoints2.value
-            val duration = 800L
+            val duration = 2000L
 
             if (player == Player.ONE) {
                 animationJobP1?.cancel()
