@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -21,7 +20,7 @@ import com.finoldigital.ygolp.presentation.enums.Player
 import com.finoldigital.ygolp.presentation.enums.CalculatorMode
 import com.finoldigital.ygolp.presentation.screens.CalculatorScreen
 import com.finoldigital.ygolp.presentation.screens.LifePointsScreen
-import com.finoldigital.ygolp.presentation.screens.Screen
+import com.finoldigital.ygolp.presentation.constants.Routes
 import com.finoldigital.ygolp.presentation.util.SoundManager
 import com.google.android.horologist.compose.layout.AppScaffold
 import com.google.android.horologist.compose.layout.ScreenScaffold
@@ -72,61 +71,37 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
 
     SwipeDismissableNavHost(
         navController = navController,
-        startDestination = Screen.LifePoints.route
+        startDestination = Routes.LifePoints.route
     ) {
-        composable(Screen.LifePoints.route) {
+        composable(Routes.LifePoints.route) {
             val pagerState = rememberPagerState(pageCount = { 2 })
             ScreenScaffold {
-                HorizontalPager(state = pagerState) { page ->
-                    val player = if (page == 0) Player.ONE else Player.TWO
-                    val displayedLifePoints = if (player == Player.ONE) displayedLifePoints1 else displayedLifePoints2
-                    if (player == Player.ONE) {
-                        LifePointsScreen(
-                            player,
-                            displayedLifePoints,
-                            isMuted,
-                            onToggleMute = { viewModel.toggleMute() },
-                            onShowCalculatorWithMode = { calculatorMode ->
-                                navController.navigate(
-                                    Screen.Calculator.createRoute(
-                                        Player.ONE,
-                                        calculatorMode
-                                    )
-                                )
-                            },
-                            onRestart = if (displayedLifePoints1 <= 0) ({ viewModel.start() }) else null
+                LifePointsScreen(
+                    pagerState = pagerState,
+                    displayedLifePoints1 = displayedLifePoints1,
+                    displayedLifePoints2 = displayedLifePoints2,
+                    isMuted = isMuted,
+                    onToggleMute = { viewModel.toggleMute() },
+                    onShowCalculatorWithMode = { player, calculatorMode ->
+                        navController.navigate(
+                            Routes.Calculator.createRoute(player, calculatorMode)
                         )
-                    } else {
-                        LifePointsScreen(
-                            player,
-                            displayedLifePoints,
-                            isMuted,
-                            onToggleMute = { viewModel.toggleMute() },
-                            onShowCalculatorWithMode = { calculatorMode ->
-                                navController.navigate(
-                                    Screen.Calculator.createRoute(
-                                        Player.TWO,
-                                        calculatorMode
-                                    )
-                                )
-                            },
-                            onRestart = if (displayedLifePoints2 <= 0) ({ viewModel.start() }) else null
-                        )
-                    }
-                }
+                    },
+                    onRestart = { viewModel.start() }
+                )
             }
         }
         composable(
-            Screen.Calculator.route,
+            Routes.Calculator.route,
             arguments = listOf(
-                navArgument("player") { type = NavType.IntType },
-                navArgument("calculatorMode") { type = NavType.IntType }
+                navArgument(Routes.PLAYER_ARG) { type = NavType.IntType },
+                navArgument(Routes.CALCULATOR_MODE_ARG) { type = NavType.IntType }
             )
         ) { backStackEntry ->
-            val player = Player.fromInt(backStackEntry.arguments?.getInt("player") ?: 1)
+            val player = Player.fromInt(backStackEntry.arguments?.getInt(Routes.PLAYER_ARG) ?: 1)
             val lifePoints = if (player == Player.ONE) lifePoints1 else lifePoints2
             val calculatorMode = CalculatorMode.fromInt(
-                backStackEntry.arguments?.getInt("calculatorMode") ?: CalculatorMode.SET.value
+                backStackEntry.arguments?.getInt(Routes.CALCULATOR_MODE_ARG) ?: CalculatorMode.SET.value
             )
 
             // Notify ViewModel we're on the calculator screen

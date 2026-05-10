@@ -38,12 +38,13 @@ import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 import com.finoldigital.ygolp.R
 import com.finoldigital.ygolp.presentation.components.PlayerIndicator
+import com.finoldigital.ygolp.presentation.constants.MAX_LIFE_POINTS
+import com.finoldigital.ygolp.presentation.constants.MIN_LIFE_POINTS
+import com.finoldigital.ygolp.presentation.constants.STARTING_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.enums.CalculatorMode
 import com.finoldigital.ygolp.presentation.enums.Player
 import com.finoldigital.ygolp.presentation.theme.AppColors
 
-const val MIN_LIFE_POINTS = 0
-const val MAX_LIFE_POINTS = 99999
 private const val MAX_OPERAND_LENGTH = 5
 
 @Composable

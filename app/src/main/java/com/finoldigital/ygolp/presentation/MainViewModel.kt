@@ -13,9 +13,9 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.finoldigital.ygolp.R
 import com.finoldigital.ygolp.presentation.enums.Player
-import com.finoldigital.ygolp.presentation.screens.STARTING_LIFE_POINTS
-import com.finoldigital.ygolp.presentation.screens.MAX_LIFE_POINTS
-import com.finoldigital.ygolp.presentation.screens.MIN_LIFE_POINTS
+import com.finoldigital.ygolp.presentation.constants.MAX_LIFE_POINTS
+import com.finoldigital.ygolp.presentation.constants.MIN_LIFE_POINTS
+import com.finoldigital.ygolp.presentation.constants.STARTING_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.util.SoundManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
