@@ -129,14 +129,26 @@ class MainViewModel(
 
     fun restart() {
         val playSound = !_isMuted.value
-        if (playSound) {
-            soundManager.play(R.raw.duel_start) {
-                changeLifePoints(STARTING_LIFE_POINTS, Player.ONE)
-                changeLifePoints(STARTING_LIFE_POINTS, Player.TWO)
+        viewModelScope.launch {
+            // Write zeros so the scramble animation from 0 → STARTING always runs
+            getApplication<Application>().dataStore.edit { settings ->
+                settings[LIFE_POINTS_P1_DS_KEY] = 0
+                settings[LIFE_POINTS_P2_DS_KEY] = 0
             }
-        } else {
-            changeLifePoints(STARTING_LIFE_POINTS, Player.ONE, playSound = false)
-            changeLifePoints(STARTING_LIFE_POINTS, Player.TWO, playSound = false)
+            _lifePoints.value = 0
+            _lifePoints2.value = 0
+            _displayedLifePoints.value = 0
+            _displayedLifePoints2.value = 0
+
+            if (playSound) {
+                soundManager.play(R.raw.duel_start) {
+                    changeLifePoints(STARTING_LIFE_POINTS, Player.ONE, forceUpdate = true)
+                    changeLifePoints(STARTING_LIFE_POINTS, Player.TWO, forceUpdate = true)
+                }
+            } else {
+                changeLifePoints(STARTING_LIFE_POINTS, Player.ONE, playSound = false, forceUpdate = true)
+                changeLifePoints(STARTING_LIFE_POINTS, Player.TWO, playSound = false, forceUpdate = true)
+            }
         }
     }
 
@@ -145,10 +157,10 @@ class MainViewModel(
         soundManager.play(R.raw.its_time_to_duel)
     }
 
-    fun changeLifePoints(lp: Int, player: Player, playSound: Boolean = true) {
+    fun changeLifePoints(lp: Int, player: Player, playSound: Boolean = true, forceUpdate: Boolean = false) {
         val clampedLp = lp.coerceIn(MIN_LIFE_POINTS, MAX_LIFE_POINTS)
         val currentLp = if (player == Player.ONE) _lifePoints.value else _lifePoints2.value
-        if (currentLp != clampedLp) {
+        if (forceUpdate || currentLp != clampedLp) {
             viewModelScope.launch {
                 getApplication<Application>().dataStore.edit { settings ->
                     if (player == Player.ONE) {
