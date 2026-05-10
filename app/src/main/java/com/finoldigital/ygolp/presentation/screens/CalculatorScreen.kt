@@ -37,6 +37,8 @@ import com.finoldigital.ygolp.presentation.components.PLAYER_1
 import com.finoldigital.ygolp.presentation.components.PlayerIndicator
 
 val INITIAL_CALCULATOR_MODE = CalculatorMode.SET
+const val MIN_LIFE_POINTS = 0
+const val MAX_LIFE_POINTS = 99999
 
 @Composable
 fun CalculatorScreen(
@@ -61,7 +63,7 @@ fun CalculatorScreen(
             CalculatorMode.ADD -> initialLifePoints + operand
             CalculatorMode.SUBTRACT -> initialLifePoints - operand
             else -> operand // SET
-        }.coerceIn(0, MAX_LIFE_POINTS)
+        }.coerceIn(MIN_LIFE_POINTS, MAX_LIFE_POINTS)
     }
 
     fun append(char: String) {

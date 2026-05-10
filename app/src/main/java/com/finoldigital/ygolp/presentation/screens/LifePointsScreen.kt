@@ -38,7 +38,6 @@ import com.finoldigital.ygolp.presentation.components.PLAYER_2
 import com.finoldigital.ygolp.presentation.components.PlayerIndicator
 
 const val INITIAL_LIFE_POINTS = 8000
-const val MAX_LIFE_POINTS = 99999
 
 @Composable
 fun LifePointsScreen(
@@ -51,7 +50,7 @@ fun LifePointsScreen(
     onRestart: (() -> Unit)? = null,
 ) {
     MaterialTheme {
-        val isLost = lifePoints <= 0 && onRestart != null
+        val isLost = lifePoints <= MIN_LIFE_POINTS && onRestart != null
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -156,7 +155,7 @@ fun LifePointsText(lifePoints: Int) {
         contentAlignment = Alignment.Center
     ) {
         val lifePointsText =
-            if (lifePoints > 0) lifePoints.toString() else stringResource(R.string.zero)
+            if (lifePoints > MIN_LIFE_POINTS) lifePoints.toString() else stringResource(R.string.game_lost)
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
