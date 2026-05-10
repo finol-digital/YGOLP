@@ -23,10 +23,10 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 import com.finoldigital.ygolp.R
+import com.finoldigital.ygolp.presentation.constants.MIN_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.constants.STARTING_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.enums.CalculatorMode
 import com.finoldigital.ygolp.presentation.enums.Player
-import com.finoldigital.ygolp.presentation.screens.MIN_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.theme.AppColors
 
 @Composable
