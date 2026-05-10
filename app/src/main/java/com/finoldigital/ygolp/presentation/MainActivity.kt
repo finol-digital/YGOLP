@@ -110,7 +110,7 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
             ScreenScaffold {
                 if (player == 1) {
                     LifePointsScreen(
-                        displayedLifePoints = displayedLifePoints,
+                        lifePoints = displayedLifePoints,
                         onShowCalculatorWithMode = { mode ->
                             navController.navigate(Screen.Calculator.createRoute(PLAYER_1, mode))
                         },
@@ -124,7 +124,7 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
                     )
                 } else {
                     LifePointsScreen(
-                        displayedLifePoints = displayedLifePoints2,
+                        lifePoints = displayedLifePoints2,
                         onShowCalculatorWithMode = { mode ->
                             navController.navigate(Screen.Calculator.createRoute(PLAYER_2, mode))
                         },

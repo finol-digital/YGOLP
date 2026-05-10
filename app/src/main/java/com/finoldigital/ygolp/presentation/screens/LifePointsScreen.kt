@@ -28,6 +28,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.Icon
+import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
@@ -42,119 +43,120 @@ const val MAX_LIFE_POINTS = 99999
 @Composable
 fun LifePointsScreen(
     playerId: Int = PLAYER_1,
-    displayedLifePoints: Int = INITIAL_LIFE_POINTS,
+    lifePoints: Int = INITIAL_LIFE_POINTS,
     isMuted: Boolean = false,
     onToggleMute: () -> Unit = {},
     onShowCalculatorWithMode: (CalculatorMode) -> Unit = {},
     onSwipePlayer: () -> Unit = {},
     onRestart: (() -> Unit)? = null,
 ) {
-    val isLost = displayedLifePoints <= 0 && onRestart != null
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
-            .pointerInput(Unit) {
-                var swipeHandled = false
-                detectHorizontalDragGestures(
-                    onDragStart = { swipeHandled = false },
-                    onDragEnd = { swipeHandled = false },
-                    onDragCancel = { swipeHandled = false },
-                    onHorizontalDrag = { change, dragAmount ->
-                        change.consume()
-                        if (!swipeHandled) {
-                            if ((playerId == PLAYER_1 && dragAmount < 0) // Player 1 swipe left
-                                || (playerId == PLAYER_2 && dragAmount > 0) // Player 2 swipe right
-                            ) {
-                                swipeHandled = true
-                                onSwipePlayer()
-                            }
-                        }
-                    }
-                )
-            }
-            .then(if (isLost) Modifier.clickable { onRestart() } else Modifier)
-    ) {
-        if (playerId == PLAYER_1) {
-            Image(
-                painterResource(R.drawable.lifepoints_background),
-                contentDescription = stringResource(R.string.bg_player_1),
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.FillBounds
-            )
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Blue,
-                                Color.Black
-                            )
-                        )
-                    )
-            ) // Gradient background for P2
-        }
-
-        if (!isLost) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(CalculatorMode.SUBTRACT) }
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(CalculatorMode.SET) }
-                )
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .clickable { onShowCalculatorWithMode(CalculatorMode.ADD) }
-                )
-            }
-        }
-        LifePointsText(displayedLifePoints)
-
-        PlayerIndicator(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp),
-            playerId = playerId
-        )
-
-        // Mute/Unmute toggle button at top center
+    MaterialTheme {
+        val isLost = lifePoints <= 0 && onRestart != null
         Box(
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(top = 4.dp)
-                .size(48.dp)
-                .clickable { onToggleMute() },
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
+                .pointerInput(Unit) {
+                    var swipeHandled = false
+                    detectHorizontalDragGestures(
+                        onDragStart = { swipeHandled = false },
+                        onDragEnd = { swipeHandled = false },
+                        onDragCancel = { swipeHandled = false },
+                        onHorizontalDrag = { change, dragAmount ->
+                            change.consume()
+                            if (!swipeHandled) {
+                                if ((playerId == PLAYER_1 && dragAmount < 0) // Player 1 swipe left
+                                    || (playerId == PLAYER_2 && dragAmount > 0) // Player 2 swipe right
+                                ) {
+                                    swipeHandled = true
+                                    onSwipePlayer()
+                                }
+                            }
+                        }
+                    )
+                }
+                .then(if (isLost) Modifier.clickable { onRestart() } else Modifier)
         ) {
-            Icon(
-                imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
-                contentDescription = if (isMuted) stringResource(R.string.unmute) else stringResource(R.string.mute),
-                tint = Color.White.copy(alpha = 0.7f),
-                modifier = Modifier.size(32.dp)
+            if (playerId == PLAYER_1) {
+                Image(
+                    painterResource(R.drawable.lifepoints_background),
+                    contentDescription = stringResource(R.string.bg_player_1),
+                    modifier = Modifier.fillMaxSize(),
+                    contentScale = ContentScale.FillBounds
+                )
+            } else {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    Color.Blue,
+                                    Color.Black
+                                )
+                            )
+                        )
+                ) // Gradient background for P2
+            }
+
+            if (!isLost) {
+                Column(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .clickable { onShowCalculatorWithMode(CalculatorMode.ADD) }
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .clickable { onShowCalculatorWithMode(CalculatorMode.SET) }
+                    )
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .clickable { onShowCalculatorWithMode(CalculatorMode.SUBTRACT) }
+                    )
+                }
+            }
+            LifePointsText(lifePoints)
+
+            PlayerIndicator(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = 16.dp),
+                playerId = playerId
             )
+
+            // Mute/Unmute toggle button at top center
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 4.dp)
+                    .size(48.dp)
+                    .clickable { onToggleMute() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                    contentDescription = if (isMuted) stringResource(R.string.unmute) else stringResource(R.string.mute),
+                    tint = Color.White.copy(alpha = 0.7f),
+                    modifier = Modifier.size(32.dp)
+                )
+            }
         }
     }
 }
 
 @Composable
-fun LifePointsText(displayedLifePoints: Int) {
+fun LifePointsText(lifePoints: Int) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
         val lifePointsText =
-            if (displayedLifePoints > 0) displayedLifePoints.toString() else stringResource(R.string.zero)
+            if (lifePoints > 0) lifePoints.toString() else stringResource(R.string.zero)
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
