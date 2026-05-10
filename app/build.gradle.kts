@@ -7,20 +7,21 @@ plugins {
 
 android {
     namespace = "com.finoldigital.ygolp"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.finoldigital.ygolp"
         minSdk = 33
         targetSdk = 36
-        versionCode = 12
-        versionName = "2.7.1"
+        versionCode = 13
+        versionName = "2.7.2"
 
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -52,10 +53,10 @@ dependencies {
     implementation(libs.ui.tooling.preview)
     implementation(libs.compose.material)
     implementation(libs.compose.foundation)
+    implementation(libs.compose.ui.tooling)
     implementation(libs.wear.tooling.preview)
     implementation(libs.activity.compose)
     implementation(libs.core.splashscreen)
-    implementation(libs.compose.ui.tooling)
     implementation(libs.material.icons.extended)
     implementation(libs.horologist.compose.layout)
     implementation(libs.datastore.preferences)

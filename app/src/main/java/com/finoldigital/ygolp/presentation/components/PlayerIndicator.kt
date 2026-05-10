@@ -1,4 +1,4 @@
-package com.finoldigital.ygolp.presentation
+package com.finoldigital.ygolp.presentation.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -14,20 +14,21 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.wear.compose.material.MaterialTheme
+import com.finoldigital.ygolp.presentation.enums.Player
 
 @Composable
-fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
+fun PlayerIndicator(modifier: Modifier = Modifier, player: Player = Player.ONE) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
         val indicatorColor = Color.White
-        val cornerRadius = CornerRadius(4.dp.value, 4.dp.value)
         val indicatorSize =
             DpSize(width = 12.dp, height = 6.dp) // Adjusted size, now uses framework DpSize
         val indicatorPadding = 4.dp // Padding between indicators
-
 
         // Player 1 Indicator
         Canvas(
@@ -36,7 +37,8 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
                 height = indicatorSize.height
             )
         ) {
-            if (playerId == 1) {
+            val cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+            if (player == Player.ONE) {
                 drawRoundRect(
                     color = indicatorColor,
                     cornerRadius = cornerRadius
@@ -59,7 +61,8 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
                 height = indicatorSize.height
             )
         ) {
-            if (playerId == 2) {
+            val cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+            if (player == Player.TWO) {
                 drawRoundRect(
                     color = indicatorColor,
                     cornerRadius = cornerRadius
@@ -72,5 +75,21 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun PlayerIndicatorPreview() {
+    MaterialTheme {
+        PlayerIndicator()
+    }
+}
+
+@Preview
+@Composable
+fun PlayerIndicatorPreview2() {
+    MaterialTheme {
+        PlayerIndicator(player = Player.TWO)
     }
 }
