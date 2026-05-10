@@ -33,8 +33,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        soundManager = SoundManager(this)
-        lifecycle.addObserver(soundManager)
+        soundManager = SoundManager(applicationContext)
 
         viewModel = ViewModelProvider(
             this,

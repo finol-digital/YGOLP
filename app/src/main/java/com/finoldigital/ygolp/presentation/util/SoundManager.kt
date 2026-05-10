@@ -5,11 +5,11 @@ import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.SoundPool
 import androidx.annotation.RawRes
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import com.finoldigital.ygolp.R
 
-class SoundManager(private val context: Context) : DefaultLifecycleObserver {
+class SoundManager(context: Context) {
+
+    private val context: Context = context.applicationContext
 
     private val soundMap = mutableMapOf<Int, Int>()
     private var soundPool: SoundPool? = null
@@ -99,11 +99,4 @@ class SoundManager(private val context: Context) : DefaultLifecycleObserver {
         soundMap.clear()
     }
 
-    override fun onStop(owner: LifecycleOwner) {
-        // Optional: reduce volume or pause
-    }
-
-    override fun onDestroy(owner: LifecycleOwner) {
-        releaseAll()
-    }
 }

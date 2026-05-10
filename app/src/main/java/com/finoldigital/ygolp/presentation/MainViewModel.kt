@@ -208,6 +208,7 @@ class MainViewModel(
         super.onCleared()
         animationJobP1?.cancel()
         animationJobP2?.cancel()
+        soundManager.releaseAll()
     }
 
     class Factory(
