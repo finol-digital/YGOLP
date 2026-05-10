@@ -11,8 +11,8 @@ import com.finoldigital.ygolp.R
 
 class SoundManager(private val context: Context) : DefaultLifecycleObserver {
 
-    private var soundPool: SoundPool? = null
     private val soundMap = mutableMapOf<Int, Int>()
+    private var soundPool: SoundPool? = null
     private var activeMediaPlayer: MediaPlayer? = null
     var isMuted: Boolean = false
     private var released: Boolean = false

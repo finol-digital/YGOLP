@@ -1,7 +1,6 @@
 package com.finoldigital.ygolp.presentation
 
 import android.app.Application
-import android.os.CountDownTimer
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -18,12 +17,13 @@ import com.finoldigital.ygolp.presentation.screens.STARTING_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.screens.MAX_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.screens.MIN_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.util.SoundManager
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 private val Application.dataStore: DataStore<Preferences> by preferencesDataStore(name = "lifepoints_settings")
 
@@ -55,8 +55,8 @@ class MainViewModel(
 
     private val _isOnCalculatorScreen = MutableStateFlow(false)
 
-    private var countDownTimerP1: CountDownTimer? = null
-    private var countDownTimerP2: CountDownTimer? = null
+    private var animationJobP1: Job? = null
+    private var animationJobP2: Job? = null
 
     init {
         viewModelScope.launch {
@@ -70,11 +70,11 @@ class MainViewModel(
                     _lifePoints.value = p1
                     _lifePoints2.value = p2 ?: 0
 
-                    // Only update displayed if no timer is running to avoid jumpiness during collection
-                    if (countDownTimerP1 == null) {
+                    // Only update displayed if no animation is running to avoid jumpiness during collection
+                    if (animationJobP1?.isActive != true) {
                         _displayedLifePoints.value = _lifePoints.value
                     }
-                    if (countDownTimerP2 == null) {
+                    if (animationJobP2?.isActive != true) {
                         _displayedLifePoints2.value = _lifePoints2.value
                     }
                 } else if (_lifePoints.value == 0 && _lifePoints2.value == 0) {
@@ -126,22 +126,15 @@ class MainViewModel(
     }
 
     fun restart() {
-        viewModelScope.launch {
-            getApplication<Application>().dataStore.edit { settings ->
-                settings[LIFE_POINTS_P1_DS_KEY] = 0
-                settings[LIFE_POINTS_P2_DS_KEY] = 0
-            }
-
-            if (_isMuted.value) {
-                changeLifePoints(STARTING_LIFE_POINTS, Player.ONE, playSound = false)
-                changeLifePoints(STARTING_LIFE_POINTS, Player.TWO, playSound = false)
-                return@launch
-            }
-
+        val playSound = !_isMuted.value
+        if (playSound) {
             soundManager.play(R.raw.duel_start) {
                 changeLifePoints(STARTING_LIFE_POINTS, Player.ONE)
                 changeLifePoints(STARTING_LIFE_POINTS, Player.TWO)
             }
+        } else {
+            changeLifePoints(STARTING_LIFE_POINTS, Player.ONE, playSound = false)
+            changeLifePoints(STARTING_LIFE_POINTS, Player.TWO, playSound = false)
         }
     }
 
@@ -167,61 +160,54 @@ class MainViewModel(
                 soundManager.play(R.raw.lifepoints_change)
             }
 
-            // Cancel any existing timer for this player
-            if (player == Player.ONE) {
-                countDownTimerP1?.cancel()
-                countDownTimerP1 = null
-            } else {
-                countDownTimerP2?.cancel()
-                countDownTimerP2 = null
-            }
-
             if (!playSound) {
-                // Skip timer creation when no sound — set displayed value directly
                 if (player == Player.ONE) {
+                    animationJobP1?.cancel()
                     _lifePoints.value = clampedLp
                     _displayedLifePoints.value = clampedLp
                 } else {
+                    animationJobP2?.cancel()
                     _lifePoints2.value = clampedLp
                     _displayedLifePoints2.value = clampedLp
                 }
                 return
             }
 
-            val timer = object : CountDownTimer(2100, 50) {
-                override fun onTick(millisUntilFinished: Long) {
-                    val tick = Random.nextInt(1000, 10000)
-                    if (player == Player.ONE) {
-                        _displayedLifePoints.value = tick
-                    } else {
-                        _displayedLifePoints2.value = tick
-                    }
-                }
-
-                override fun onFinish() {
-                    if (player == Player.ONE) {
-                        _displayedLifePoints.value = _lifePoints.value
-                        countDownTimerP1 = null
-                    } else {
-                        _displayedLifePoints2.value = _lifePoints2.value
-                        countDownTimerP2 = null
-                    }
-                }
-            }
+            val startLp = if (player == Player.ONE) _displayedLifePoints.value else _displayedLifePoints2.value
+            val duration = 800L
 
             if (player == Player.ONE) {
-                countDownTimerP1 = timer
+                animationJobP1?.cancel()
+                animationJobP1 = viewModelScope.launch {
+                    val startTime = System.currentTimeMillis()
+                    while (System.currentTimeMillis() - startTime < duration) {
+                        val progress = (System.currentTimeMillis() - startTime).toFloat() / duration
+                        _displayedLifePoints.value = startLp + ((clampedLp - startLp) * progress).toInt()
+                        delay(16)
+                    }
+                    _lifePoints.value = clampedLp
+                    _displayedLifePoints.value = clampedLp
+                }
             } else {
-                countDownTimerP2 = timer
+                animationJobP2?.cancel()
+                animationJobP2 = viewModelScope.launch {
+                    val startTime = System.currentTimeMillis()
+                    while (System.currentTimeMillis() - startTime < duration) {
+                        val progress = (System.currentTimeMillis() - startTime).toFloat() / duration
+                        _displayedLifePoints2.value = startLp + ((clampedLp - startLp) * progress).toInt()
+                        delay(16)
+                    }
+                    _lifePoints2.value = clampedLp
+                    _displayedLifePoints2.value = clampedLp
+                }
             }
-            timer.start()
         }
     }
 
     override fun onCleared() {
         super.onCleared()
-        countDownTimerP1?.cancel()
-        countDownTimerP2?.cancel()
+        animationJobP1?.cancel()
+        animationJobP2?.cancel()
     }
 
     class Factory(

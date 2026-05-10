@@ -46,7 +46,6 @@ fun LifePointsScreen(
     isMuted: Boolean = false,
     onToggleMute: () -> Unit = {},
     onShowCalculatorWithMode: (CalculatorMode) -> Unit = {},
-    onSwipePlayer: () -> Unit = {},
     onRestart: (() -> Unit)? = null,
 ) {
     val isLost = lifePoints <= MIN_LIFE_POINTS && onRestart != null
@@ -54,25 +53,6 @@ fun LifePointsScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(Unit) {
-                    var swipeHandled = false
-                    detectHorizontalDragGestures(
-                        onDragStart = { swipeHandled = false },
-                        onDragEnd = { swipeHandled = false },
-                        onDragCancel = { swipeHandled = false },
-                        onHorizontalDrag = { change, dragAmount ->
-                            change.consume()
-                            if (!swipeHandled) {
-                                if ((player == Player.ONE && dragAmount < 0)
-                                    || (player == Player.TWO && dragAmount > 0)
-                                ) {
-                                    swipeHandled = true
-                                    onSwipePlayer()
-                                }
-                            }
-                        }
-                    )
-                }
                 .then(
                     if (isLost) {
                         Modifier.clickable { onRestart() }

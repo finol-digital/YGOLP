@@ -104,14 +104,14 @@ fun CalculatorScreen(
     }
 
     fun append(char: String) {
-        var currentText = operandText.trimStart('0')
+        var currentText = if (operandText == digit0) "" else operandText
         currentText += char
         // Limit to MAX_OPERAND_LENGTH characters
         if (currentText.length > MAX_OPERAND_LENGTH) {
             currentText = currentText.take(MAX_OPERAND_LENGTH)
         }
         operandText =
-            if (currentText.toIntOrNull() == 0 || currentText.isEmpty()) digit0 else currentText
+            if (currentText.isEmpty() || currentText.toLongOrNull() == 0L) digit0 else currentText
     }
 
     fun pop() {

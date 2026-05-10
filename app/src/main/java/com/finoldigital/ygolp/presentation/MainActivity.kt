@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -62,7 +64,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHostController) {
 
-    val displayedLifePoints by viewModel.displayedLifePoints.collectAsState()
+    val displayedLifePoints1 by viewModel.displayedLifePoints.collectAsState()
     val displayedLifePoints2 by viewModel.displayedLifePoints2.collectAsState()
     val lifePoints1 by viewModel.lifePoints.collectAsState()
     val lifePoints2 by viewModel.lifePoints2.collectAsState()
@@ -70,44 +72,47 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
 
     SwipeDismissableNavHost(
         navController = navController,
-        startDestination = Screen.LifePoints.createRoute(Player.ONE)
+        startDestination = Screen.LifePoints.route
     ) {
-        composable(
-            Screen.LifePoints.route,
-            arguments = listOf(
-                navArgument("player") { type = NavType.IntType }
-            )
-        ) { backStackEntry ->
-            val player = Player.fromInt(backStackEntry.arguments?.getInt("player") ?: 1)
+        composable(Screen.LifePoints.route) {
+            val pagerState = rememberPagerState(pageCount = { 2 })
             ScreenScaffold {
-                if (player == Player.ONE) {
-                    LifePointsScreen(
-                        player,
-                        lifePoints = displayedLifePoints,
-                        isMuted = isMuted,
-                        onToggleMute = { viewModel.toggleMute() },
-                        onShowCalculatorWithMode = { calculatorMode ->
-                            navController.navigate(Screen.Calculator.createRoute(Player.ONE, calculatorMode))
-                        },
-                        onSwipePlayer = {
-                            navController.navigate(Screen.LifePoints.createRoute(Player.TWO)) {
-                                launchSingleTop = true
-                            }
-                        },
-                        onRestart = if (displayedLifePoints <= 0) ({ viewModel.start() }) else null
-                    )
-                } else {
-                    LifePointsScreen(
-                        player,
-                        lifePoints = displayedLifePoints2,
-                        isMuted = isMuted,
-                        onToggleMute = { viewModel.toggleMute() },
-                        onShowCalculatorWithMode = { calculatorMode ->
-                            navController.navigate(Screen.Calculator.createRoute(Player.TWO, calculatorMode))
-                        },
-                        onSwipePlayer = { navController.popBackStack() },
-                        onRestart = if (displayedLifePoints2 <= 0) ({ viewModel.start() }) else null
-                    )
+                HorizontalPager(state = pagerState) { page ->
+                    val player = if (page == 0) Player.ONE else Player.TWO
+                    val displayedLifePoints = if (player == Player.ONE) displayedLifePoints1 else displayedLifePoints2
+                    if (player == Player.ONE) {
+                        LifePointsScreen(
+                            player,
+                            displayedLifePoints,
+                            isMuted,
+                            onToggleMute = { viewModel.toggleMute() },
+                            onShowCalculatorWithMode = { calculatorMode ->
+                                navController.navigate(
+                                    Screen.Calculator.createRoute(
+                                        Player.ONE,
+                                        calculatorMode
+                                    )
+                                )
+                            },
+                            onRestart = if (displayedLifePoints1 <= 0) ({ viewModel.start() }) else null
+                        )
+                    } else {
+                        LifePointsScreen(
+                            player,
+                            displayedLifePoints,
+                            isMuted,
+                            onToggleMute = { viewModel.toggleMute() },
+                            onShowCalculatorWithMode = { calculatorMode ->
+                                navController.navigate(
+                                    Screen.Calculator.createRoute(
+                                        Player.TWO,
+                                        calculatorMode
+                                    )
+                                )
+                            },
+                            onRestart = if (displayedLifePoints2 <= 0) ({ viewModel.start() }) else null
+                        )
+                    }
                 }
             }
         }
@@ -134,9 +139,9 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
                 CalculatorScreen(
                     player,
                     lifePoints,
-                    calculatorMode,
-                    { navController.popBackStack() },
-                    { result ->
+                    initialCalculatorMode = calculatorMode,
+                    onDiscard = { navController.popBackStack() },
+                    onSubmit = { result ->
                         viewModel.changeLifePoints(result, player)
                         navController.popBackStack()
                     },
