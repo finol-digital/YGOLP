@@ -16,6 +16,8 @@ import com.finoldigital.ygolp.R
 import com.finoldigital.ygolp.presentation.components.PLAYER_1
 import com.finoldigital.ygolp.presentation.components.PLAYER_2
 import com.finoldigital.ygolp.presentation.screens.INITIAL_LIFE_POINTS
+import com.finoldigital.ygolp.presentation.screens.MAX_LIFE_POINTS
+import com.finoldigital.ygolp.presentation.screens.MIN_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.util.SoundManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -130,12 +132,12 @@ class MainViewModel(
     }
 
     fun changeLifePoints(lp: Int, player: Int, playSound: Boolean = true) {
-        val clampedLp = lp.coerceIn(0, 99999)
+        val clampedLp = lp.coerceIn(MIN_LIFE_POINTS, MAX_LIFE_POINTS)
         val currentLp = if (player == PLAYER_1) _lifePoints.value else _lifePoints2.value
         if (currentLp != clampedLp) {
             viewModelScope.launch {
                 getApplication<Application>().dataStore.edit { settings ->
-                    if (player == 1) {
+                    if (player == PLAYER_1) {
                         settings[LIFE_POINTS_P1_DS_KEY] = clampedLp
                     } else {
                         settings[LIFE_POINTS_P2_DS_KEY] = clampedLp
@@ -158,7 +160,7 @@ class MainViewModel(
             val timer = object : CountDownTimer(if (playSound) 2100 else 0, 50) {
                 override fun onTick(millisUntilFinished: Long) {
                     val tick = Random.nextInt(1000, 10000)
-                    if (player == 1) {
+                    if (player == PLAYER_1) {
                         _displayedLifePoints.value = tick
                     } else {
                         _displayedLifePoints2.value = tick
