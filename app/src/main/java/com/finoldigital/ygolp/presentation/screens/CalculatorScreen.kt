@@ -24,6 +24,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
@@ -35,6 +36,7 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
+import com.finoldigital.ygolp.R
 import com.finoldigital.ygolp.presentation.components.PlayerIndicator
 import com.finoldigital.ygolp.presentation.enums.CalculatorMode
 import com.finoldigital.ygolp.presentation.enums.Player
@@ -52,15 +54,46 @@ fun CalculatorScreen(
     onDiscard: () -> Unit = {},
     onSubmit: (Int) -> Unit = {},
 ) {
+    val operatorAdd = stringResource(R.string.calculator_operator_add)
+    val operatorSubtract = stringResource(R.string.calculator_operator_subtract)
+    val operatorSet = stringResource(R.string.calculator_operator_set)
+    val labelAdd = stringResource(R.string.calculator_label_add)
+    val labelSubtract = stringResource(R.string.calculator_label_subtract)
+    val labelSet = stringResource(R.string.calculator_label_set)
+    val textHalve = stringResource(R.string.calculator_text_halve)
+    val labelHalve = stringResource(R.string.calculator_label_halve)
+    val textClear = stringResource(R.string.calculator_text_clear)
+    val labelClear = stringResource(R.string.calculator_label_clear)
+    val textDiscard = stringResource(R.string.calculator_text_discard)
+    val labelDiscard = stringResource(R.string.calculator_label_discard)
+    val textSubmit = stringResource(R.string.calculator_text_submit)
+    val labelSubmit = stringResource(R.string.calculator_label_submit)
+
+    val digit0 = stringResource(R.string.calculator_digit_0)
+    val digit1 = stringResource(R.string.calculator_digit_1)
+    val digit2 = stringResource(R.string.calculator_digit_2)
+    val digit3 = stringResource(R.string.calculator_digit_3)
+    val digit4 = stringResource(R.string.calculator_digit_4)
+    val digit5 = stringResource(R.string.calculator_digit_5)
+    val digit6 = stringResource(R.string.calculator_digit_6)
+    val digit7 = stringResource(R.string.calculator_digit_7)
+    val digit8 = stringResource(R.string.calculator_digit_8)
+    val digit9 = stringResource(R.string.calculator_digit_9)
+    val digit00 = stringResource(R.string.calculator_digit_00)
+    val digit000 = stringResource(R.string.calculator_digit_000)
+
+    val label00 = stringResource(R.string.calculator_label_00)
+    val label000 = stringResource(R.string.calculator_label_000)
+
     var calculatorMode by remember { mutableStateOf(initialCalculatorMode) }
-    val operatorTextAndColor = remember(calculatorMode) {
+    val operatorTextAndColor = remember(calculatorMode, operatorAdd, operatorSubtract, operatorSet) {
         when (calculatorMode) {
-            CalculatorMode.ADD -> "+" to Color.Green
-            CalculatorMode.SUBTRACT -> "-" to Color.Red
-            else -> "=>" to Color.Yellow
+            CalculatorMode.ADD -> operatorAdd to Color.Green
+            CalculatorMode.SUBTRACT -> operatorSubtract to Color.Red
+            else -> operatorSet to Color.Yellow
         }
     }
-    var operandText by remember { mutableStateOf("0") }
+    var operandText by remember { mutableStateOf(digit0) }
     val result = remember(lifePoints, calculatorMode, operandText) {
         val operand = operandText.toIntOrNull() ?: 0
         when (calculatorMode) {
@@ -78,12 +111,12 @@ fun CalculatorScreen(
             currentText = currentText.take(MAX_OPERAND_LENGTH)
         }
         operandText =
-            if (currentText.toIntOrNull() == 0 || currentText.isEmpty()) "0" else currentText
+            if (currentText.toIntOrNull() == 0 || currentText.isEmpty()) digit0 else currentText
     }
 
     fun pop() {
         operandText =
-            if (operandText.length > 1) operandText.dropLast(1) else "0"
+            if (operandText.length > 1) operandText.dropLast(1) else digit0
     }
 
     fun nextMode() {
@@ -95,11 +128,11 @@ fun CalculatorScreen(
         onSubmit(result)
     }
 
-    val operatorDescription = remember(calculatorMode) {
+    val operatorDescription = remember(calculatorMode, labelAdd, labelSubtract, labelSet) {
         when (calculatorMode) {
-            CalculatorMode.ADD -> "Add"
-            CalculatorMode.SUBTRACT -> "Subtract"
-            else -> "Set"
+            CalculatorMode.ADD -> labelAdd
+            CalculatorMode.SUBTRACT -> labelSubtract
+            else -> labelSet
         }
     }
 
@@ -169,8 +202,8 @@ fun CalculatorScreen(
                         modifier = Modifier.weight(1.5f)
                     )
                     OperatorButton(
-                        text = "1/2",
-                        accessibilityLabel = "Halve",
+                        text = textHalve,
+                        accessibilityLabel = labelHalve,
                         modifier = Modifier.weight(1f),
                         color = MaterialTheme.colors.primary,
                         onClick = { onSubmit(lifePoints / 2) }
@@ -181,38 +214,38 @@ fun CalculatorScreen(
                 // Calculator Buttons
                 // Row 1
                 FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton("7", accessibilityLabel = "7") { append("7") }
-                    CalculatorButton("8", accessibilityLabel = "8") { append("8") }
-                    CalculatorButton("9", accessibilityLabel = "9") { append("9") }
-                    CalculatorButton("C", accessibilityLabel = "Clear") { pop() }
+                    CalculatorButton(digit7, accessibilityLabel = digit7) { append(digit7) }
+                    CalculatorButton(digit8, accessibilityLabel = digit8) { append(digit8) }
+                    CalculatorButton(digit9, accessibilityLabel = digit9) { append(digit9) }
+                    CalculatorButton(textClear, accessibilityLabel = labelClear) { pop() }
                 }
                 // Row 2
                 FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton("4", accessibilityLabel = "4") { append("4") }
-                    CalculatorButton("5", accessibilityLabel = "5") { append("5") }
-                    CalculatorButton("6", accessibilityLabel = "6") { append("6") }
+                    CalculatorButton(digit4, accessibilityLabel = digit4) { append(digit4) }
+                    CalculatorButton(digit5, accessibilityLabel = digit5) { append(digit5) }
+                    CalculatorButton(digit6, accessibilityLabel = digit6) { append(digit6) }
                     CalculatorButton(
-                        "X",
-                        accessibilityLabel = "Discard",
+                        textDiscard,
+                        accessibilityLabel = labelDiscard,
                         color = MaterialTheme.colors.error
                     ) { onDiscard() }
                 }
                 // Row 3
                 FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton("1", accessibilityLabel = "1") { append("1") }
-                    CalculatorButton("2", accessibilityLabel = "2") { append("2") }
-                    CalculatorButton("3", accessibilityLabel = "3") { append("3") }
+                    CalculatorButton(digit1, accessibilityLabel = digit1) { append(digit1) }
+                    CalculatorButton(digit2, accessibilityLabel = digit2) { append(digit2) }
+                    CalculatorButton(digit3, accessibilityLabel = digit3) { append(digit3) }
                     CalculatorButton(
-                        "=",
-                        accessibilityLabel = "Submit",
+                        textSubmit,
+                        accessibilityLabel = labelSubmit,
                         color = MaterialTheme.colors.primary
                     ) { submit() }
                 }
                 // Row 4
                 FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton("0", accessibilityLabel = "0") { append("0") }
-                    CalculatorButton("00", accessibilityLabel = "Double zero") { append("00") }
-                    CalculatorButton("000", accessibilityLabel = "Triple zero") { append("000") }
+                    CalculatorButton(digit0, accessibilityLabel = digit0) { append(digit0) }
+                    CalculatorButton(digit00, accessibilityLabel = label00) { append(digit00) }
+                    CalculatorButton(digit000, accessibilityLabel = label000) { append(digit000) }
                 }
             }
             PlayerIndicator(

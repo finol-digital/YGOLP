@@ -4,4 +4,32 @@
     <string name="unmute">Unmute</string>
     <string name="mute">Mute</string>
     <string name="game_lost">0</string>
+    <string name="calculator_operator_add">+</string>
+    <string name="calculator_operator_subtract">-</string>
+    <string name="calculator_operator_set">=></string>
+    <string name="calculator_label_add">Add</string>
+    <string name="calculator_label_subtract">Subtract</string>
+    <string name="calculator_label_set">Set</string>
+    <string name="calculator_text_halve">½</string>
+    <string name="calculator_label_halve">Halve</string>
+    <string name="calculator_text_clear">C</string>
+    <string name="calculator_label_clear">Clear</string>
+    <string name="calculator_text_discard">X</string>
+    <string name="calculator_label_discard">Discard</string>
+    <string name="calculator_text_submit">=</string>
+    <string name="calculator_label_submit">Submit</string>
+    <string name="calculator_digit_0">0</string>
+    <string name="calculator_digit_00">00</string>
+    <string name="calculator_digit_000">000</string>
+    <string name="calculator_label_00">Double zero</string>
+    <string name="calculator_label_000">Triple zero</string>
+    <string name="calculator_digit_1">1</string>
+    <string name="calculator_digit_2">2</string>
+    <string name="calculator_digit_3">3</string>
+    <string name="calculator_digit_4">4</string>
+    <string name="calculator_digit_5">5</string>
+    <string name="calculator_digit_6">6</string>
+    <string name="calculator_digit_7">7</string>
+    <string name="calculator_digit_8">8</string>
+    <string name="calculator_digit_9">9</string>
 </resources>
