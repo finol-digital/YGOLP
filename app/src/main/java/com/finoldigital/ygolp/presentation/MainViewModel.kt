@@ -13,6 +13,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.finoldigital.ygolp.R
+import com.finoldigital.ygolp.presentation.components.PLAYER_1
+import com.finoldigital.ygolp.presentation.components.PLAYER_2
+import com.finoldigital.ygolp.presentation.screens.INITIAL_LIFE_POINTS
+import com.finoldigital.ygolp.presentation.util.SoundManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

@@ -1,4 +1,4 @@
-package com.finoldigital.ygolp.presentation
+package com.finoldigital.ygolp.presentation.screens
 
 import android.view.KeyEvent
 import androidx.compose.foundation.focusable
@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -34,18 +33,20 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
+import com.finoldigital.ygolp.presentation.components.PLAYER_1
+import com.finoldigital.ygolp.presentation.components.PlayerIndicator
 
-const val INITIAL_CALCULATOR_MODE = CalculatorMode.SET
+val INITIAL_CALCULATOR_MODE = CalculatorMode.SET
 
 @Composable
 fun CalculatorScreen(
     playerId: Int = PLAYER_1,
-    initialCalculatorMode: Int = INITIAL_CALCULATOR_MODE,
+    initialCalculatorMode: CalculatorMode = INITIAL_CALCULATOR_MODE,
     initialLifePoints: Int = INITIAL_LIFE_POINTS,
     onDiscard: () -> Unit = {},
     onSubmit: (Int) -> Unit = {},
 ) {
-    var calculatorMode by remember { mutableIntStateOf(initialCalculatorMode) } // 0:SET 1:SUBTRACT 2:ADD
+    var calculatorMode by remember { mutableStateOf(initialCalculatorMode) } // 0:SET 1:SUBTRACT 2:ADD
     val operatorTextAndColor = remember(calculatorMode) {
         when (calculatorMode) {
             CalculatorMode.ADD -> "+" to Color.Green
@@ -76,7 +77,8 @@ fun CalculatorScreen(
     }
 
     fun nextMode() {
-        calculatorMode = (calculatorMode + 1) % 3
+        val entries = CalculatorMode.entries
+        calculatorMode = entries[(calculatorMode.ordinal + 1) % entries.size]
     }
 
     fun submit() {

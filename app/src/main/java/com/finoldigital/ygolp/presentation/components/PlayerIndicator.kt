@@ -1,4 +1,4 @@
-package com.finoldigital.ygolp.presentation
+package com.finoldigital.ygolp.presentation.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Arrangement
@@ -14,6 +14,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.wear.compose.material.MaterialTheme
 
 const val PLAYER_1 = 1
 const val PLAYER_2 = 2
@@ -29,7 +31,6 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
         val indicatorSize =
             DpSize(width = 12.dp, height = 6.dp) // Adjusted size, now uses framework DpSize
         val indicatorPadding = 4.dp // Padding between indicators
-
 
         // Player 1 Indicator
         Canvas(
@@ -76,5 +77,21 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
                 )
             }
         }
+    }
+}
+
+@Preview
+@Composable
+fun PlayerIndicatorPlayer1Preview() {
+    MaterialTheme {
+        PlayerIndicator(playerId = PLAYER_1)
+    }
+}
+
+@Preview
+@Composable
+fun PlayerIndicatorPlayer2Preview() {
+    MaterialTheme {
+        PlayerIndicator(playerId = PLAYER_2)
     }
 }

@@ -1,4 +1,4 @@
-package com.finoldigital.ygolp.presentation
+package com.finoldigital.ygolp.presentation.util
 
 import android.content.Context
 import android.media.AudioAttributes
@@ -26,8 +26,8 @@ class SoundManager(private val context: Context) : DefaultLifecycleObserver {
 
         // Preload common sounds
         loadSound(R.raw.duel_start)
-        loadSound(R.raw.its_time_to_duel)
         loadSound(R.raw.lifepoints_change)
+        loadSound(R.raw.its_time_to_duel)
     }
 
     private fun loadSound(@RawRes resId: Int) {
@@ -46,7 +46,7 @@ class SoundManager(private val context: Context) : DefaultLifecycleObserver {
         val soundId = soundMap[soundResId]
         if (soundId != null) {
             soundPool?.play(soundId, 1f, 1f, 1, 0, 1f)
-            // SoundPool doesn't have a completion listener for single plays, 
+            // SoundPool doesn't have a completion listener for single plays,
             // but for short effects we can invoke it immediately or after a delay.
             // For duel_start/its_time_to_duel, we'll keep the completion behavior.
             if (soundResId == R.raw.duel_start || soundResId == R.raw.its_time_to_duel) {
@@ -76,4 +76,3 @@ class SoundManager(private val context: Context) : DefaultLifecycleObserver {
         releaseAll()
     }
 }
-

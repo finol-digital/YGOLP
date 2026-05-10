@@ -14,6 +14,13 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
+import com.finoldigital.ygolp.presentation.components.PLAYER_1
+import com.finoldigital.ygolp.presentation.components.PLAYER_2
+import com.finoldigital.ygolp.presentation.screens.CalculatorMode
+import com.finoldigital.ygolp.presentation.screens.CalculatorScreen
+import com.finoldigital.ygolp.presentation.screens.LifePointsScreen
+import com.finoldigital.ygolp.presentation.screens.Screen
+import com.finoldigital.ygolp.presentation.util.SoundManager
 import com.google.android.horologist.compose.layout.AppScaffold
 import com.google.android.horologist.compose.layout.ScreenScaffold
 
@@ -91,7 +98,7 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
 
     SwipeDismissableNavHost(
         navController = navController,
-        startDestination = Screen.LifePoints.route
+        startDestination = Screen.LifePoints.createRoute(PLAYER_1)
     ) {
         composable(
             Screen.LifePoints.route,
@@ -99,15 +106,15 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
                 navArgument("player") { type = NavType.IntType }
             )
         ) { backStackEntry ->
-            val player = backStackEntry.arguments?.getInt("player") ?: 1
+            val player = backStackEntry.arguments?.getInt("player") ?: PLAYER_1
             ScreenScaffold {
                 if (player == 1) {
                     LifePointsScreen(
                         displayedLifePoints = displayedLifePoints,
-                        onShowCalculatorWithMode = { mode -> 
+                        onShowCalculatorWithMode = { mode ->
                             navController.navigate(Screen.Calculator.createRoute(PLAYER_1, mode))
                         },
-                        onSwipePlayer = { 
+                        onSwipePlayer = {
                             navController.navigate(Screen.LifePoints.createRoute(PLAYER_2))
                         },
                         playerId = player,
@@ -118,7 +125,7 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
                 } else {
                     LifePointsScreen(
                         displayedLifePoints = displayedLifePoints2,
-                        onShowCalculatorWithMode = { mode -> 
+                        onShowCalculatorWithMode = { mode ->
                             navController.navigate(Screen.Calculator.createRoute(PLAYER_2, mode))
                         },
                         onSwipePlayer = { navController.popBackStack() },
@@ -138,8 +145,9 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
             )
         ) { backStackEntry ->
             val player = backStackEntry.arguments?.getInt("player") ?: PLAYER_1
-            val initialCalculatorMode =
-                backStackEntry.arguments?.getInt("initialCalculatorMode") ?: CalculatorMode.SUBTRACT
+            val initialCalculatorMode = CalculatorMode.fromInt(
+                backStackEntry.arguments?.getInt("initialCalculatorMode") ?: CalculatorMode.SUBTRACT.value
+            )
             val currentLifePoints = if (player == PLAYER_1) lifePoints else lifePoints2
             ScreenScaffold {
                 CalculatorScreen(

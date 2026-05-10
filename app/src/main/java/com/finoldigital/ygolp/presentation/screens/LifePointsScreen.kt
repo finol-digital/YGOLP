@@ -1,4 +1,4 @@
-package com.finoldigital.ygolp.presentation
+package com.finoldigital.ygolp.presentation.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -32,6 +32,9 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 import com.finoldigital.ygolp.R
+import com.finoldigital.ygolp.presentation.components.PLAYER_1
+import com.finoldigital.ygolp.presentation.components.PLAYER_2
+import com.finoldigital.ygolp.presentation.components.PlayerIndicator
 
 const val INITIAL_LIFE_POINTS = 8000
 const val MAX_LIFE_POINTS = 99999
@@ -42,7 +45,7 @@ fun LifePointsScreen(
     displayedLifePoints: Int = INITIAL_LIFE_POINTS,
     isMuted: Boolean = false,
     onToggleMute: () -> Unit = {},
-    onShowCalculatorWithMode: (Int) -> Unit = {},
+    onShowCalculatorWithMode: (CalculatorMode) -> Unit = {},
     onSwipePlayer: () -> Unit = {},
     onRestart: (() -> Unit)? = null,
 ) {
