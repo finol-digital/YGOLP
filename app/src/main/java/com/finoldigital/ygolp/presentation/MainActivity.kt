@@ -110,29 +110,29 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
             ScreenScaffold {
                 if (player == 1) {
                     LifePointsScreen(
+                        playerId = player,
                         lifePoints = displayedLifePoints,
+                        isMuted = isMuted,
+                        onToggleMute = { viewModel.toggleMute() },
                         onShowCalculatorWithMode = { mode ->
                             navController.navigate(Screen.Calculator.createRoute(PLAYER_1, mode))
                         },
                         onSwipePlayer = {
                             navController.navigate(Screen.LifePoints.createRoute(PLAYER_2))
                         },
-                        playerId = player,
-                        onRestart = if (displayedLifePoints <= 0) ({ viewModel.start() }) else null,
-                        isMuted = isMuted,
-                        onToggleMute = { viewModel.toggleMute() }
+                        onRestart = if (displayedLifePoints <= 0) ({ viewModel.start() }) else null
                     )
                 } else {
                     LifePointsScreen(
+                        playerId = player,
                         lifePoints = displayedLifePoints2,
+                        isMuted = isMuted,
+                        onToggleMute = { viewModel.toggleMute() },
                         onShowCalculatorWithMode = { mode ->
                             navController.navigate(Screen.Calculator.createRoute(PLAYER_2, mode))
                         },
                         onSwipePlayer = { navController.popBackStack() },
-                        playerId = player,
-                        onRestart = if (displayedLifePoints2 <= 0) ({ viewModel.start() }) else null,
-                        isMuted = isMuted,
-                        onToggleMute = { viewModel.toggleMute() }
+                        onRestart = if (displayedLifePoints2 <= 0) ({ viewModel.start() }) else null
                     )
                 }
             }
@@ -144,19 +144,19 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
                 navArgument("initialCalculatorMode") { type = NavType.IntType }
             )
         ) { backStackEntry ->
-            val player = backStackEntry.arguments?.getInt("player") ?: PLAYER_1
+            val playerId = backStackEntry.arguments?.getInt("player") ?: PLAYER_1
             val initialCalculatorMode = CalculatorMode.fromInt(
-                backStackEntry.arguments?.getInt("initialCalculatorMode") ?: CalculatorMode.SUBTRACT.value
+                backStackEntry.arguments?.getInt("initialCalculatorMode") ?: CalculatorMode.SET.value
             )
-            val currentLifePoints = if (player == PLAYER_1) lifePoints else lifePoints2
+            val currentLifePoints = if (playerId == PLAYER_1) lifePoints else lifePoints2
             ScreenScaffold {
                 CalculatorScreen(
-                    playerId = player,
+                    playerId,
                     initialCalculatorMode,
                     currentLifePoints,
                     { navController.popBackStack() },
                     { result ->
-                        viewModel.changeLifePoints(result, player)
+                        viewModel.changeLifePoints(result, playerId)
                         navController.popBackStack()
                     },
                 )

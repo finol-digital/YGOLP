@@ -49,8 +49,8 @@ fun LifePointsScreen(
     onSwipePlayer: () -> Unit = {},
     onRestart: (() -> Unit)? = null,
 ) {
+    val isLost = lifePoints <= MIN_LIFE_POINTS && onRestart != null
     MaterialTheme {
-        val isLost = lifePoints <= MIN_LIFE_POINTS && onRestart != null
         Box(
             modifier = Modifier
                 .fillMaxSize()
