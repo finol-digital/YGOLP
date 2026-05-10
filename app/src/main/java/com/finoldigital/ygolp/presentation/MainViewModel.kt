@@ -13,9 +13,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.finoldigital.ygolp.R
-import com.finoldigital.ygolp.presentation.components.PLAYER_1
-import com.finoldigital.ygolp.presentation.components.PLAYER_2
-import com.finoldigital.ygolp.presentation.screens.INITIAL_LIFE_POINTS
+import com.finoldigital.ygolp.presentation.enums.Player
+import com.finoldigital.ygolp.presentation.screens.STARTING_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.screens.MAX_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.screens.MIN_LIFE_POINTS
 import com.finoldigital.ygolp.presentation.util.SoundManager
@@ -54,6 +53,7 @@ class MainViewModel(
     private val _isMuted = MutableStateFlow(false)
     val isMuted: StateFlow<Boolean> = _isMuted.asStateFlow()
 
+    private val _isOnCalculatorScreen = MutableStateFlow(false)
 
     private var countDownTimerP1: CountDownTimer? = null
     private var countDownTimerP2: CountDownTimer? = null
@@ -69,7 +69,7 @@ class MainViewModel(
                 if (p1 != null) {
                     _lifePoints.value = p1
                     _lifePoints2.value = p2 ?: 0
-                    
+
                     // Only update displayed if no timer is running to avoid jumpiness during collection
                     if (countDownTimerP1 == null) {
                         _displayedLifePoints.value = _lifePoints.value
@@ -106,23 +106,42 @@ class MainViewModel(
         }
     }
 
+    fun setOnCalculatorScreen(isOnCalculator: Boolean) {
+        _isOnCalculatorScreen.value = isOnCalculator
+    }
+
+    fun handleStemKey(keyCode: Int): Boolean {
+        if (_isOnCalculatorScreen.value) return false
+        return when (keyCode) {
+            android.view.KeyEvent.KEYCODE_STEM_1 -> {
+                restart()
+                true
+            }
+            android.view.KeyEvent.KEYCODE_STEM_2 -> {
+                startItsTimeToDuel()
+                true
+            }
+            else -> false
+        }
+    }
+
     fun restart() {
         viewModelScope.launch {
             getApplication<Application>().dataStore.edit { settings ->
                 settings[LIFE_POINTS_P1_DS_KEY] = 0
                 settings[LIFE_POINTS_P2_DS_KEY] = 0
             }
-        }
 
-        if (_isMuted.value) {
-            changeLifePoints(INITIAL_LIFE_POINTS, PLAYER_1, playSound = false)
-            changeLifePoints(INITIAL_LIFE_POINTS, PLAYER_2, playSound = false)
-            return
-        }
+            if (_isMuted.value) {
+                changeLifePoints(STARTING_LIFE_POINTS, Player.ONE, playSound = false)
+                changeLifePoints(STARTING_LIFE_POINTS, Player.TWO, playSound = false)
+                return@launch
+            }
 
-        soundManager.play(R.raw.duel_start) {
-            changeLifePoints(INITIAL_LIFE_POINTS, PLAYER_1)
-            changeLifePoints(INITIAL_LIFE_POINTS, PLAYER_2)
+            soundManager.play(R.raw.duel_start) {
+                changeLifePoints(STARTING_LIFE_POINTS, Player.ONE)
+                changeLifePoints(STARTING_LIFE_POINTS, Player.TWO)
+            }
         }
     }
 
@@ -131,13 +150,13 @@ class MainViewModel(
         soundManager.play(R.raw.its_time_to_duel)
     }
 
-    fun changeLifePoints(lp: Int, player: Int, playSound: Boolean = true) {
+    fun changeLifePoints(lp: Int, player: Player, playSound: Boolean = true) {
         val clampedLp = lp.coerceIn(MIN_LIFE_POINTS, MAX_LIFE_POINTS)
-        val currentLp = if (player == PLAYER_1) _lifePoints.value else _lifePoints2.value
+        val currentLp = if (player == Player.ONE) _lifePoints.value else _lifePoints2.value
         if (currentLp != clampedLp) {
             viewModelScope.launch {
                 getApplication<Application>().dataStore.edit { settings ->
-                    if (player == PLAYER_1) {
+                    if (player == Player.ONE) {
                         settings[LIFE_POINTS_P1_DS_KEY] = clampedLp
                     } else {
                         settings[LIFE_POINTS_P2_DS_KEY] = clampedLp
@@ -149,7 +168,7 @@ class MainViewModel(
             }
 
             // Cancel any existing timer for this player
-            if (player == PLAYER_1) {
+            if (player == Player.ONE) {
                 countDownTimerP1?.cancel()
                 countDownTimerP1 = null
             } else {
@@ -157,10 +176,22 @@ class MainViewModel(
                 countDownTimerP2 = null
             }
 
-            val timer = object : CountDownTimer(if (playSound) 2100 else 0, 50) {
+            if (!playSound) {
+                // Skip timer creation when no sound — set displayed value directly
+                if (player == Player.ONE) {
+                    _lifePoints.value = clampedLp
+                    _displayedLifePoints.value = clampedLp
+                } else {
+                    _lifePoints2.value = clampedLp
+                    _displayedLifePoints2.value = clampedLp
+                }
+                return
+            }
+
+            val timer = object : CountDownTimer(2100, 50) {
                 override fun onTick(millisUntilFinished: Long) {
                     val tick = Random.nextInt(1000, 10000)
-                    if (player == PLAYER_1) {
+                    if (player == Player.ONE) {
                         _displayedLifePoints.value = tick
                     } else {
                         _displayedLifePoints2.value = tick
@@ -168,7 +199,7 @@ class MainViewModel(
                 }
 
                 override fun onFinish() {
-                    if (player == PLAYER_1) {
+                    if (player == Player.ONE) {
                         _displayedLifePoints.value = _lifePoints.value
                         countDownTimerP1 = null
                     } else {
@@ -178,7 +209,7 @@ class MainViewModel(
                 }
             }
 
-            if (player == PLAYER_1) {
+            if (player == Player.ONE) {
                 countDownTimerP1 = timer
             } else {
                 countDownTimerP2 = timer
@@ -203,4 +234,3 @@ class MainViewModel(
         }
     }
 }
-

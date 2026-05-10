@@ -16,12 +16,10 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.wear.compose.material.MaterialTheme
-
-const val PLAYER_1 = 1
-const val PLAYER_2 = 2
+import com.finoldigital.ygolp.presentation.enums.Player
 
 @Composable
-fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
+fun PlayerIndicator(modifier: Modifier = Modifier, player: Player = Player.ONE) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.Center,
@@ -40,7 +38,7 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
             )
         ) {
             val cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
-            if (playerId == PLAYER_1) {
+            if (player == Player.ONE) {
                 drawRoundRect(
                     color = indicatorColor,
                     cornerRadius = cornerRadius
@@ -64,7 +62,7 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
             )
         ) {
             val cornerRadius = CornerRadius(4.dp.toPx(), 4.dp.toPx())
-            if (playerId == PLAYER_2) {
+            if (player == Player.TWO) {
                 drawRoundRect(
                     color = indicatorColor,
                     cornerRadius = cornerRadius
@@ -82,16 +80,16 @@ fun PlayerIndicator(modifier: Modifier = Modifier, playerId: Int) {
 
 @Preview
 @Composable
-fun PlayerIndicatorPlayer1Preview() {
+fun PlayerIndicatorPreview() {
     MaterialTheme {
-        PlayerIndicator(playerId = PLAYER_1)
+        PlayerIndicator()
     }
 }
 
 @Preview
 @Composable
-fun PlayerIndicatorPlayer2Preview() {
+fun PlayerIndicatorPreview2() {
     MaterialTheme {
-        PlayerIndicator(playerId = PLAYER_2)
+        PlayerIndicator(player = Player.TWO)
     }
 }

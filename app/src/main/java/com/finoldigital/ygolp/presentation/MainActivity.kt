@@ -5,6 +5,7 @@ import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModelProvider
@@ -14,9 +15,8 @@ import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.navigation.SwipeDismissableNavHost
 import androidx.wear.compose.navigation.composable
 import androidx.wear.compose.navigation.rememberSwipeDismissableNavController
-import com.finoldigital.ygolp.presentation.components.PLAYER_1
-import com.finoldigital.ygolp.presentation.components.PLAYER_2
-import com.finoldigital.ygolp.presentation.screens.CalculatorMode
+import com.finoldigital.ygolp.presentation.enums.Player
+import com.finoldigital.ygolp.presentation.enums.CalculatorMode
 import com.finoldigital.ygolp.presentation.screens.CalculatorScreen
 import com.finoldigital.ygolp.presentation.screens.LifePointsScreen
 import com.finoldigital.ygolp.presentation.screens.Screen
@@ -28,7 +28,6 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var soundManager: SoundManager
     private lateinit var viewModel: MainViewModel
-    private var navControllerInstance: androidx.navigation.NavHostController? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +44,6 @@ class MainActivity : ComponentActivity() {
             MaterialTheme {
                 AppScaffold {
                     val navController = rememberSwipeDismissableNavController()
-                    navControllerInstance = navController
                     WearApp(viewModel, navController)
                 }
             }
@@ -53,34 +51,8 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        // Check if we are on the Calculator screen
-        val currentRoute = navControllerInstance?.currentDestination?.route
-        val isCalculator = currentRoute?.startsWith("calculator") == true
-
-        return if (event.repeatCount == 0) {
-            when (keyCode) {
-                KeyEvent.KEYCODE_STEM_1 -> {
-                    if (!isCalculator) {
-                        viewModel.restart()
-                        true
-                    } else {
-                        false // Let the CalculatorScreen handle it
-                    }
-                }
-
-                KeyEvent.KEYCODE_STEM_2 -> {
-                    if (!isCalculator) {
-                        viewModel.startItsTimeToDuel()
-                        true
-                    } else {
-                        false // Let the CalculatorScreen handle it
-                    }
-                }
-
-                else -> {
-                    super.onKeyDown(keyCode, event)
-                }
-            }
+        return if (event.repeatCount == 0 && viewModel.handleStemKey(keyCode)) {
+            true
         } else {
             super.onKeyDown(keyCode, event)
         }
@@ -92,13 +64,13 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
 
     val displayedLifePoints by viewModel.displayedLifePoints.collectAsState()
     val displayedLifePoints2 by viewModel.displayedLifePoints2.collectAsState()
-    val lifePoints by viewModel.lifePoints.collectAsState()
+    val lifePoints1 by viewModel.lifePoints.collectAsState()
     val lifePoints2 by viewModel.lifePoints2.collectAsState()
     val isMuted by viewModel.isMuted.collectAsState()
 
     SwipeDismissableNavHost(
         navController = navController,
-        startDestination = Screen.LifePoints.createRoute(PLAYER_1)
+        startDestination = Screen.LifePoints.createRoute(Player.ONE)
     ) {
         composable(
             Screen.LifePoints.route,
@@ -106,30 +78,32 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
                 navArgument("player") { type = NavType.IntType }
             )
         ) { backStackEntry ->
-            val player = backStackEntry.arguments?.getInt("player") ?: PLAYER_1
+            val player = Player.fromInt(backStackEntry.arguments?.getInt("player") ?: 1)
             ScreenScaffold {
-                if (player == 1) {
+                if (player == Player.ONE) {
                     LifePointsScreen(
-                        playerId = player,
+                        player,
                         lifePoints = displayedLifePoints,
                         isMuted = isMuted,
                         onToggleMute = { viewModel.toggleMute() },
-                        onShowCalculatorWithMode = { mode ->
-                            navController.navigate(Screen.Calculator.createRoute(PLAYER_1, mode))
+                        onShowCalculatorWithMode = { calculatorMode ->
+                            navController.navigate(Screen.Calculator.createRoute(Player.ONE, calculatorMode))
                         },
                         onSwipePlayer = {
-                            navController.navigate(Screen.LifePoints.createRoute(PLAYER_2))
+                            navController.navigate(Screen.LifePoints.createRoute(Player.TWO)) {
+                                launchSingleTop = true
+                            }
                         },
                         onRestart = if (displayedLifePoints <= 0) ({ viewModel.start() }) else null
                     )
                 } else {
                     LifePointsScreen(
-                        playerId = player,
+                        player,
                         lifePoints = displayedLifePoints2,
                         isMuted = isMuted,
                         onToggleMute = { viewModel.toggleMute() },
-                        onShowCalculatorWithMode = { mode ->
-                            navController.navigate(Screen.Calculator.createRoute(PLAYER_2, mode))
+                        onShowCalculatorWithMode = { calculatorMode ->
+                            navController.navigate(Screen.Calculator.createRoute(Player.TWO, calculatorMode))
                         },
                         onSwipePlayer = { navController.popBackStack() },
                         onRestart = if (displayedLifePoints2 <= 0) ({ viewModel.start() }) else null
@@ -141,22 +115,29 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
             Screen.Calculator.route,
             arguments = listOf(
                 navArgument("player") { type = NavType.IntType },
-                navArgument("initialCalculatorMode") { type = NavType.IntType }
+                navArgument("calculatorMode") { type = NavType.IntType }
             )
         ) { backStackEntry ->
-            val playerId = backStackEntry.arguments?.getInt("player") ?: PLAYER_1
-            val initialCalculatorMode = CalculatorMode.fromInt(
-                backStackEntry.arguments?.getInt("initialCalculatorMode") ?: CalculatorMode.SET.value
+            val player = Player.fromInt(backStackEntry.arguments?.getInt("player") ?: 1)
+            val lifePoints = if (player == Player.ONE) lifePoints1 else lifePoints2
+            val calculatorMode = CalculatorMode.fromInt(
+                backStackEntry.arguments?.getInt("calculatorMode") ?: CalculatorMode.SET.value
             )
-            val currentLifePoints = if (playerId == PLAYER_1) lifePoints else lifePoints2
+
+            // Notify ViewModel we're on the calculator screen
+            DisposableEffect(Unit) {
+                viewModel.setOnCalculatorScreen(true)
+                onDispose { viewModel.setOnCalculatorScreen(false) }
+            }
+
             ScreenScaffold {
                 CalculatorScreen(
-                    playerId,
-                    initialCalculatorMode,
-                    currentLifePoints,
+                    player,
+                    lifePoints,
+                    calculatorMode,
                     { navController.popBackStack() },
                     { result ->
-                        viewModel.changeLifePoints(result, playerId)
+                        viewModel.changeLifePoints(result, player)
                         navController.popBackStack()
                     },
                 )

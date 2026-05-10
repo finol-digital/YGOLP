@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -33,16 +32,17 @@ import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
 import androidx.wear.compose.ui.tooling.preview.WearPreviewFontScales
 import com.finoldigital.ygolp.R
-import com.finoldigital.ygolp.presentation.components.PLAYER_1
-import com.finoldigital.ygolp.presentation.components.PLAYER_2
 import com.finoldigital.ygolp.presentation.components.PlayerIndicator
+import com.finoldigital.ygolp.presentation.enums.CalculatorMode
+import com.finoldigital.ygolp.presentation.enums.Player
+import com.finoldigital.ygolp.presentation.theme.AppColors
 
-const val INITIAL_LIFE_POINTS = 8000
+const val STARTING_LIFE_POINTS = 8000
 
 @Composable
 fun LifePointsScreen(
-    playerId: Int = PLAYER_1,
-    lifePoints: Int = INITIAL_LIFE_POINTS,
+    player: Player = Player.ONE,
+    lifePoints: Int = STARTING_LIFE_POINTS,
     isMuted: Boolean = false,
     onToggleMute: () -> Unit = {},
     onShowCalculatorWithMode: (CalculatorMode) -> Unit = {},
@@ -63,8 +63,8 @@ fun LifePointsScreen(
                         onHorizontalDrag = { change, dragAmount ->
                             change.consume()
                             if (!swipeHandled) {
-                                if ((playerId == PLAYER_1 && dragAmount < 0) // Player 1 swipe left
-                                    || (playerId == PLAYER_2 && dragAmount > 0) // Player 2 swipe right
+                                if ((player == Player.ONE && dragAmount < 0)
+                                    || (player == Player.TWO && dragAmount > 0)
                                 ) {
                                     swipeHandled = true
                                     onSwipePlayer()
@@ -73,9 +73,15 @@ fun LifePointsScreen(
                         }
                     )
                 }
-                .then(if (isLost) Modifier.clickable { onRestart() } else Modifier)
+                .then(
+                    if (isLost) {
+                        Modifier.clickable { onRestart() }
+                    } else {
+                        Modifier
+                    }
+                )
         ) {
-            if (playerId == PLAYER_1) {
+            if (player == Player.ONE) {
                 Image(
                     painterResource(R.drawable.lifepoints_background),
                     contentDescription = stringResource(R.string.bg_player_1),
@@ -89,12 +95,12 @@ fun LifePointsScreen(
                         .background(
                             brush = Brush.verticalGradient(
                                 colors = listOf(
-                                    Color.Blue,
-                                    Color.Black
+                                    AppColors.P2GradientStart,
+                                    AppColors.P2GradientEnd
                                 )
                             )
                         )
-                ) // Gradient background for P2
+                )
             }
 
             if (!isLost) {
@@ -125,7 +131,7 @@ fun LifePointsScreen(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .padding(bottom = 16.dp),
-                playerId = playerId
+                player = player
             )
 
             // Mute/Unmute toggle button at top center
@@ -140,7 +146,7 @@ fun LifePointsScreen(
                 Icon(
                     imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
                     contentDescription = if (isMuted) stringResource(R.string.unmute) else stringResource(R.string.mute),
-                    tint = Color.White.copy(alpha = 0.7f),
+                    tint = AppColors.MuteIconTint,
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -159,7 +165,7 @@ fun LifePointsText(lifePoints: Int) {
         Text(
             modifier = Modifier.fillMaxWidth(),
             textAlign = TextAlign.Center,
-            color = Color(0xFFFBFF0C),
+            color = AppColors.LpTextYellow,
             fontFamily = FontFamily(Font(R.font.nationalyze_alp)),
             fontSize = 32.sp,
             text = lifePointsText
@@ -178,5 +184,5 @@ fun LifePointsScreenPreview() {
 @WearPreviewFontScales
 @Composable
 fun LifePointsScreenPreview2() {
-    LifePointsScreen(PLAYER_2)
+    LifePointsScreen(Player.TWO)
 }

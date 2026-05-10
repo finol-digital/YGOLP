@@ -1,4 +1,4 @@
-## ADDED Requirements
+## MODIFIED Requirements
 
 ### Requirement: SoundManager encapsulates all MediaPlayer lifecycle
 The system SHALL provide a `SoundManager` class that uses `MediaPlayer` for sounds requiring completion callbacks (`duel_start`, `its_time_to_duel`) and `SoundPool` for fire-and-forget sounds (`lifepoints_change`). The `play(soundResId, onCompletion)` method SHALL invoke `onCompletion` only after the sound has actually finished playing when using `MediaPlayer`. No other class SHALL directly create or hold `MediaPlayer` references.
@@ -26,9 +26,12 @@ The system SHALL ensure that every `MediaPlayer.create()` call has a correspondi
 - **WHEN** the user triggers `restart()` twice in quick succession
 - **THEN** the first MediaPlayer SHALL be released before the second is created, and no leaked players exist
 
+## ADDED Requirements
+
 ### Requirement: SoundManager guards against use after release
 The `SoundManager` SHALL track whether `releaseAll()` has been called. If `play()` is called after `releaseAll()`, it SHALL either silently no-op or re-initialize, and SHALL NOT crash or throw a NullPointerException.
 
 #### Scenario: play() called after releaseAll()
 - **WHEN** `releaseAll()` has been called and then `play(R.raw.lifepoints_change)` is invoked
 - **THEN** the call SHALL not throw an exception and SHALL not play any sound
+

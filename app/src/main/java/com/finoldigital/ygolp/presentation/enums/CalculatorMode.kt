@@ -1,4 +1,4 @@
-package com.finoldigital.ygolp.presentation.screens
+package com.finoldigital.ygolp.presentation.enums
 
 enum class CalculatorMode(val value: Int) {
     SET(0),
