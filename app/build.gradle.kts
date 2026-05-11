@@ -15,7 +15,6 @@ android {
         targetSdk = 36
         versionCode = 13
         versionName = "2.7.2"
-
     }
 
     buildTypes {
@@ -65,4 +64,8 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+}
+
+base {
+    archivesName.set("ygolp")
 }
