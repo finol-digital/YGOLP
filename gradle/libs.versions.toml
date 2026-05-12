@@ -2,6 +2,7 @@
 agp = "9.2.1"
 datastorePreferences = "1.2.1"
 horologistComposeLayout = "0.7.15"
+junit = "4.13.2"
 kotlin = "2.3.21"
 playServicesWearable = "20.0.1"
 composeBom = "2026.05.00"
@@ -16,6 +17,7 @@ espressoCore = "3.7.0"
 [libraries]
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastorePreferences" }
 horologist-compose-layout = { module = "com.google.android.horologist:horologist-compose-layout", version.ref = "horologistComposeLayout" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
 play-services-wearable = { group = "com.google.android.gms", name = "play-services-wearable", version.ref = "playServicesWearable" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 ui = { group = "androidx.compose.ui", name = "ui" }

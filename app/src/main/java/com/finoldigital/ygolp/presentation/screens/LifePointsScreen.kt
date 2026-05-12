@@ -38,43 +38,41 @@ fun LifePointsScreen(
     onShowCalculatorWithMode: (Player, CalculatorMode) -> Unit = { _, _ -> },
     onRestart: () -> Unit = {},
 ) {
-    MaterialTheme {
-        Box(modifier = Modifier.fillMaxSize()) {
-            HorizontalPager(state = pagerState) { page ->
-                val player = if (page == 0) Player.ONE else Player.TWO
-                val displayedLifePoints = if (player == Player.ONE) displayedLifePoints1 else displayedLifePoints2
-                LifePointsPage(
-                    player = player,
-                    lifePoints = displayedLifePoints,
-                    onShowCalculatorWithMode = { calculatorMode ->
-                        onShowCalculatorWithMode(player, calculatorMode)
-                    },
-                    onRestart = if (displayedLifePoints <= 0) onRestart else null
-                )
-            }
-
-            PlayerIndicator(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp),
-                player = if (pagerState.currentPage == 0) Player.ONE else Player.TWO
+    Box(modifier = Modifier.fillMaxSize()) {
+        HorizontalPager(state = pagerState) { page ->
+            val player = if (page == 0) Player.ONE else Player.TWO
+            val displayedLifePoints = if (player == Player.ONE) displayedLifePoints1 else displayedLifePoints2
+            LifePointsPage(
+                player = player,
+                lifePoints = displayedLifePoints,
+                onShowCalculatorWithMode = { calculatorMode ->
+                    onShowCalculatorWithMode(player, calculatorMode)
+                },
+                onRestart = if (displayedLifePoints <= 0) onRestart else null
             )
+        }
 
-            Box(
-                modifier = Modifier
-                    .align(Alignment.TopCenter)
-                    .padding(top = 4.dp)
-                    .size(48.dp)
-                    .clickable { onToggleMute() },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
-                    contentDescription = if (isMuted) stringResource(R.string.unmute) else stringResource(R.string.mute),
-                    tint = AppColors.MuteIconTint,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
+        PlayerIndicator(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp),
+            player = if (pagerState.currentPage == 0) Player.ONE else Player.TWO
+        )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .padding(top = 4.dp)
+                .size(48.dp)
+                .clickable { onToggleMute() },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (isMuted) Icons.AutoMirrored.Filled.VolumeOff else Icons.AutoMirrored.Filled.VolumeUp,
+                contentDescription = if (isMuted) stringResource(R.string.unmute) else stringResource(R.string.mute),
+                tint = AppColors.MuteIconTint,
+                modifier = Modifier.size(32.dp)
+            )
         }
     }
 }
@@ -83,6 +81,8 @@ fun LifePointsScreen(
 @WearPreviewFontScales
 @Composable
 fun LifePointsScreenPreview() {
-    val pagerState = rememberPagerState(pageCount = { 2 })
-    LifePointsScreen(pagerState)
+    MaterialTheme {
+        val pagerState = rememberPagerState(pageCount = { 2 })
+        LifePointsScreen(pagerState)
+    }
 }
