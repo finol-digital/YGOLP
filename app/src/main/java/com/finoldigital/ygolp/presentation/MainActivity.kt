@@ -74,7 +74,7 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
     ) {
         composable(Routes.LifePoints.route) {
             val pagerState = rememberPagerState(pageCount = { 2 })
-            ScreenScaffold(timeText = {}) {
+            ScreenScaffold(timeText = null) {
                 LifePointsScreen(
                     pagerState = pagerState,
                     displayedLifePoints1 = displayedLifePoints1,
@@ -109,7 +109,7 @@ fun WearApp(viewModel: MainViewModel, navController: androidx.navigation.NavHost
                 onDispose { viewModel.setOnCalculatorScreen(false) }
             }
 
-            ScreenScaffold(timeText = {}) {
+            ScreenScaffold(timeText = null) {
                 CalculatorScreen(
                     player,
                     lifePoints,
