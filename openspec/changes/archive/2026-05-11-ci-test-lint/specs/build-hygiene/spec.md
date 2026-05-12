@@ -1,11 +1,4 @@
-## ADDED Requirements
-
-### Requirement: compose-ui-tooling is a debug-only dependency
-The build SHALL declare `compose-ui-tooling` as `debugImplementation` instead of `implementation`. Release APKs SHALL NOT contain UI tooling classes.
-
-#### Scenario: Release APK excludes tooling
-- **WHEN** the release build variant is assembled
-- **THEN** the APK SHALL NOT contain any classes from `androidx.wear.compose:compose-ui-tooling`
+## MODIFIED Requirements
 
 ### Requirement: No unused imports in production code
 All Kotlin source files SHALL contain only imports that are actively referenced. The build SHALL pass with no unused-import warnings. CI SHALL enforce this via an explicit lint step in the GitHub Actions workflow.

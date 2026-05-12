@@ -13,9 +13,8 @@ android {
         applicationId = "com.finoldigital.ygolp"
         minSdk = 33
         targetSdk = 36
-        versionCode = 13
-        versionName = "2.7.2"
-
+        versionCode = 14
+        versionName = "2.7.3"
     }
 
     buildTypes {
@@ -60,9 +59,14 @@ dependencies {
     implementation(libs.material.icons.extended)
     implementation(libs.horologist.compose.layout)
     implementation(libs.datastore.preferences)
+    testImplementation(libs.junit)
     androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     androidTestImplementation(libs.espresso.core)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+}
+
+base {
+    archivesName.set("ygolp")
 }

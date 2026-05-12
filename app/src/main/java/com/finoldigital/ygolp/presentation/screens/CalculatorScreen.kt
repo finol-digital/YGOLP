@@ -138,126 +138,125 @@ fun CalculatorScreen(
     }
 
     val focusRequester = remember { FocusRequester() }
-    MaterialTheme {
-        Box(
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .focusRequester(focusRequester)
+            .onKeyEvent { keyEvent ->
+                if (keyEvent.nativeKeyEvent.repeatCount == 0 && keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
+                    when (keyEvent.nativeKeyEvent.keyCode) {
+                        KeyEvent.KEYCODE_STEM_1 -> {
+                            submit()
+                            true
+                        }
+
+                        KeyEvent.KEYCODE_STEM_2 -> {
+                            onDiscard()
+                            true
+                        }
+
+                        else -> false
+                    }
+                } else {
+                    false
+                }
+            }
+            .focusable()
+    ) {
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .focusRequester(focusRequester)
-                .onKeyEvent { keyEvent ->
-                    if (keyEvent.nativeKeyEvent.repeatCount == 0 && keyEvent.nativeKeyEvent.action == KeyEvent.ACTION_DOWN) {
-                        when (keyEvent.nativeKeyEvent.keyCode) {
-                            KeyEvent.KEYCODE_STEM_1 -> {
-                                submit()
-                                true
-                            }
-
-                            KeyEvent.KEYCODE_STEM_2 -> {
-                                onDiscard()
-                                true
-                            }
-
-                            else -> false
-                        }
-                    } else {
-                        false
-                    }
-                }
-                .focusable()
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(8.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(1.dp)
+            // LifePoints Display
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = lifePoints.toString(),
+                    fontSize = 20.sp,
+                    color = Color.White,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+
+            // Operator and Operand Display
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(2.dp)
             ) {
-                // LifePoints Display
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = lifePoints.toString(),
-                        fontSize = 20.sp,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-
-                // Operator and Operand Display
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(2.dp)
-                ) {
-                    Spacer(modifier = Modifier.weight(0.5f))
-                    OperatorButton(
-                        text = operatorTextAndColor.first,
-                        accessibilityLabel = operatorDescription,
-                        modifier = Modifier.weight(1f),
-                        color = operatorTextAndColor.second,
-                        onClick = { nextMode() }
-                    )
-                    Text(
-                        text = operandText,
-                        fontSize = 20.sp,
-                        color = operatorTextAndColor.second,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1.5f)
-                    )
-                    OperatorButton(
-                        text = textHalve,
-                        accessibilityLabel = labelHalve,
-                        modifier = Modifier.weight(1f),
-                        color = MaterialTheme.colors.primary,
-                        onClick = { onSubmit(lifePoints / 2) }
-                    )
-                    Spacer(modifier = Modifier.weight(0.5f))
-                }
-
-                // Calculator Buttons
-                // Row 1
-                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton(digit7, accessibilityLabel = digit7) { append(digit7) }
-                    CalculatorButton(digit8, accessibilityLabel = digit8) { append(digit8) }
-                    CalculatorButton(digit9, accessibilityLabel = digit9) { append(digit9) }
-                    CalculatorButton(textClear, accessibilityLabel = labelClear) { pop() }
-                }
-                // Row 2
-                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton(digit4, accessibilityLabel = digit4) { append(digit4) }
-                    CalculatorButton(digit5, accessibilityLabel = digit5) { append(digit5) }
-                    CalculatorButton(digit6, accessibilityLabel = digit6) { append(digit6) }
-                    CalculatorButton(
-                        textDiscard,
-                        accessibilityLabel = labelDiscard,
-                        color = MaterialTheme.colors.error
-                    ) { onDiscard() }
-                }
-                // Row 3
-                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton(digit1, accessibilityLabel = digit1) { append(digit1) }
-                    CalculatorButton(digit2, accessibilityLabel = digit2) { append(digit2) }
-                    CalculatorButton(digit3, accessibilityLabel = digit3) { append(digit3) }
-                    CalculatorButton(
-                        textSubmit,
-                        accessibilityLabel = labelSubmit,
-                        color = MaterialTheme.colors.primary
-                    ) { submit() }
-                }
-                // Row 4
-                FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
-                    CalculatorButton(digit0, accessibilityLabel = digit0) { append(digit0) }
-                    CalculatorButton(digit00, accessibilityLabel = label00) { append(digit00) }
-                    CalculatorButton(digit000, accessibilityLabel = label000) { append(digit000) }
-                }
+                Spacer(modifier = Modifier.weight(0.5f))
+                OperatorButton(
+                    text = operatorTextAndColor.first,
+                    accessibilityLabel = operatorDescription,
+                    modifier = Modifier.weight(1f),
+                    color = operatorTextAndColor.second,
+                    onClick = { nextMode() }
+                )
+                Text(
+                    text = operandText,
+                    fontSize = 20.sp,
+                    color = operatorTextAndColor.second,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.weight(1.5f)
+                )
+                OperatorButton(
+                    text = textHalve,
+                    accessibilityLabel = labelHalve,
+                    modifier = Modifier.weight(1f),
+                    color = MaterialTheme.colors.primary,
+                    onClick = { onSubmit(lifePoints / 2) }
+                )
+                Spacer(modifier = Modifier.weight(0.5f))
             }
-            PlayerIndicator(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 16.dp),
-                player = player
-            )
-            LaunchedEffect(Unit) {
-                focusRequester.requestFocus()
+
+            // Calculator Buttons
+            // Row 1
+            FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                CalculatorButton(digit7, accessibilityLabel = digit7) { append(digit7) }
+                CalculatorButton(digit8, accessibilityLabel = digit8) { append(digit8) }
+                CalculatorButton(digit9, accessibilityLabel = digit9) { append(digit9) }
+                CalculatorButton(textClear, accessibilityLabel = labelClear) { pop() }
             }
+            // Row 2
+            FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                CalculatorButton(digit4, accessibilityLabel = digit4) { append(digit4) }
+                CalculatorButton(digit5, accessibilityLabel = digit5) { append(digit5) }
+                CalculatorButton(digit6, accessibilityLabel = digit6) { append(digit6) }
+                CalculatorButton(
+                    textDiscard,
+                    accessibilityLabel = labelDiscard,
+                    color = MaterialTheme.colors.error
+                ) { onDiscard() }
+            }
+            // Row 3
+            FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                CalculatorButton(digit1, accessibilityLabel = digit1) { append(digit1) }
+                CalculatorButton(digit2, accessibilityLabel = digit2) { append(digit2) }
+                CalculatorButton(digit3, accessibilityLabel = digit3) { append(digit3) }
+                CalculatorButton(
+                    textSubmit,
+                    accessibilityLabel = labelSubmit,
+                    color = MaterialTheme.colors.primary
+                ) { submit() }
+            }
+            // Row 4
+            FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
+                CalculatorButton(digit0, accessibilityLabel = digit0) { append(digit0) }
+                CalculatorButton(digit00, accessibilityLabel = label00) { append(digit00) }
+                CalculatorButton(digit000, accessibilityLabel = label000) { append(digit000) }
+            }
+        }
+        PlayerIndicator(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp),
+            player = player
+        )
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
         }
     }
 }
@@ -306,5 +305,7 @@ fun CalculatorButton(
 @WearPreviewFontScales
 @Composable
 fun CalculatorScreenPreview() {
-    CalculatorScreen()
+    MaterialTheme {
+        CalculatorScreen()
+    }
 }
