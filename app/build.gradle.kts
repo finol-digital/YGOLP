@@ -13,8 +13,8 @@ android {
         applicationId = "com.finoldigital.ygolp"
         minSdk = 33
         targetSdk = 36
-        versionCode = 14
-        versionName = "2.7.3"
+        versionCode = 15
+        versionName = "2.8.0"
     }
 
     buildTypes {
