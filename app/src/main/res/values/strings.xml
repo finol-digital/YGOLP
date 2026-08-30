@@ -10,10 +10,9 @@
     <string name="calculator_label_add">Add</string>
     <string name="calculator_label_subtract">Subtract</string>
     <string name="calculator_label_set">Set</string>
+    <string name="calculator_label_clear">Backspace</string>
     <string name="calculator_text_halve">½</string>
     <string name="calculator_label_halve">Halve</string>
-    <string name="calculator_text_clear">C</string>
-    <string name="calculator_label_clear">Clear</string>
     <string name="calculator_text_discard">X</string>
     <string name="calculator_label_discard">Discard</string>
     <string name="calculator_text_submit">=</string>

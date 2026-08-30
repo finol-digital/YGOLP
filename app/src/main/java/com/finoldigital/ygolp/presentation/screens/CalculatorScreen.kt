@@ -11,7 +11,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -32,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.wear.compose.material.Button
 import androidx.wear.compose.material.ButtonDefaults
+import androidx.wear.compose.material.Icon
 import androidx.wear.compose.material.MaterialTheme
 import androidx.wear.compose.material.Text
 import androidx.wear.compose.ui.tooling.preview.WearPreviewDevices
@@ -61,10 +65,9 @@ fun CalculatorScreen(
     val labelAdd = stringResource(R.string.calculator_label_add)
     val labelSubtract = stringResource(R.string.calculator_label_subtract)
     val labelSet = stringResource(R.string.calculator_label_set)
+    val labelClear = stringResource(R.string.calculator_label_clear)
     val textHalve = stringResource(R.string.calculator_text_halve)
     val labelHalve = stringResource(R.string.calculator_label_halve)
-    val textClear = stringResource(R.string.calculator_text_clear)
-    val labelClear = stringResource(R.string.calculator_label_clear)
     val textDiscard = stringResource(R.string.calculator_text_discard)
     val labelDiscard = stringResource(R.string.calculator_label_discard)
     val textSubmit = stringResource(R.string.calculator_text_submit)
@@ -87,13 +90,14 @@ fun CalculatorScreen(
     val label000 = stringResource(R.string.calculator_label_000)
 
     var calculatorMode by remember { mutableStateOf(initialCalculatorMode) }
-    val operatorTextAndColor = remember(calculatorMode, operatorAdd, operatorSubtract, operatorSet) {
-        when (calculatorMode) {
-            CalculatorMode.ADD -> operatorAdd to Color.Green
-            CalculatorMode.SUBTRACT -> operatorSubtract to Color.Red
-            else -> operatorSet to Color.Yellow
+    val operatorTextAndColor =
+        remember(calculatorMode, operatorAdd, operatorSubtract, operatorSet) {
+            when (calculatorMode) {
+                CalculatorMode.ADD -> operatorAdd to Color.Green
+                CalculatorMode.SUBTRACT -> operatorSubtract to Color.Red
+                else -> operatorSet to Color.Yellow
+            }
         }
-    }
     var operandText by remember { mutableStateOf(digit0) }
     val result = remember(lifePoints, calculatorMode, operandText) {
         val operand = operandText.toIntOrNull() ?: 0
@@ -203,12 +207,17 @@ fun CalculatorScreen(
                     modifier = Modifier.weight(1.5f)
                 )
                 OperatorButton(
-                    text = textHalve,
-                    accessibilityLabel = labelHalve,
+                    accessibilityLabel = labelClear,
                     modifier = Modifier.weight(1f),
-                    color = MaterialTheme.colors.primary,
-                    onClick = { onSubmit(lifePoints / 2) }
-                )
+                    onClick = { pop() }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.Backspace,
+                        contentDescription = null,
+                        tint = MaterialTheme.colors.error,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.weight(0.5f))
             }
 
@@ -218,7 +227,10 @@ fun CalculatorScreen(
                 CalculatorButton(digit7, accessibilityLabel = digit7) { append(digit7) }
                 CalculatorButton(digit8, accessibilityLabel = digit8) { append(digit8) }
                 CalculatorButton(digit9, accessibilityLabel = digit9) { append(digit9) }
-                CalculatorButton(textClear, accessibilityLabel = labelClear) { pop() }
+                CalculatorButton(
+                    textHalve, accessibilityLabel = labelHalve,
+                    color = MaterialTheme.colors.secondary
+                ) { onSubmit(lifePoints / 2) }
             }
             // Row 2
             FlowRow(horizontalArrangement = Arrangement.Center, maxItemsInEachRow = 4) {
@@ -269,6 +281,22 @@ fun OperatorButton(
     color: Color = MaterialTheme.colors.surface,
     onClick: () -> Unit
 ) {
+    OperatorButton(
+        accessibilityLabel = accessibilityLabel,
+        modifier = modifier,
+        onClick = onClick
+    ) {
+        Text(text, color = color)
+    }
+}
+
+@Composable
+fun OperatorButton(
+    accessibilityLabel: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+    content: @Composable () -> Unit
+) {
     Button(
         onClick = onClick,
         modifier = modifier
@@ -276,7 +304,7 @@ fun OperatorButton(
             .semantics { contentDescription = accessibilityLabel },
         colors = ButtonDefaults.buttonColors(backgroundColor = AppColors.CalculatorButtonDark)
     ) {
-        Text(text, color = color)
+        content()
     }
 }
 
