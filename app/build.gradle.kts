@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.horologist.compose.layout)
     implementation(libs.datastore.preferences)
     testImplementation(libs.junit)
+    androidTestImplementation(platform(libs.compose.bom))
     androidTestImplementation(libs.ui.test.junit4)
     androidTestImplementation(libs.espresso.core)
     debugImplementation(libs.ui.tooling)
