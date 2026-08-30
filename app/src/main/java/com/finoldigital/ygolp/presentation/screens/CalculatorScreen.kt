@@ -65,7 +65,7 @@ fun CalculatorScreen(
     val labelAdd = stringResource(R.string.calculator_label_add)
     val labelSubtract = stringResource(R.string.calculator_label_subtract)
     val labelSet = stringResource(R.string.calculator_label_set)
-    val labelClear = stringResource(R.string.calculator_label_clear)
+    val labelBackspace = stringResource(R.string.calculator_label_backspace)
     val textHalve = stringResource(R.string.calculator_text_halve)
     val labelHalve = stringResource(R.string.calculator_label_halve)
     val textDiscard = stringResource(R.string.calculator_text_discard)
@@ -207,7 +207,7 @@ fun CalculatorScreen(
                     modifier = Modifier.weight(1.5f)
                 )
                 OperatorButton(
-                    accessibilityLabel = labelClear,
+                    accessibilityLabel = labelBackspace,
                     modifier = Modifier.weight(1f),
                     onClick = { pop() }
                 ) {
