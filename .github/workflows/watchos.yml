@@ -1,0 +1,44 @@
+name: watchOS CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v7
+      - name: Show Xcode version
+        run: xcodebuild -version
+      - name: Pick a watchOS simulator
+        run: |
+          find_sim() {
+            xcrun simctl list devices available -j \
+              | jq -r '[.devices | to_entries[] | select(.key | test("watchOS")) | .value[]][-1].udid // empty'
+          }
+          SIM_ID="$(find_sim)"
+          if [ -z "$SIM_ID" ]; then
+            xcodebuild -downloadPlatform watchOS
+            SIM_ID="$(find_sim)"
+          fi
+          echo "Using simulator $SIM_ID"
+          echo "SIM_ID=$SIM_ID" >> "$GITHUB_ENV"
+      - name: Build and test
+        run: |
+          xcodebuild test \
+            -project watchos/YGOLP.xcodeproj \
+            -scheme YGOLP \
+            -destination "id=$SIM_ID" \
+            -resultBundlePath build/YGOLP.xcresult \
+            CODE_SIGNING_ALLOWED=NO
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ygolp-watchos-test-results
+          path: build/YGOLP.xcresult

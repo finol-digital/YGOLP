@@ -10,3 +10,6 @@
 local.properties
 /app/release
 /.kotlin/
+xcuserdata/
+DerivedData/
+*.xcresult
