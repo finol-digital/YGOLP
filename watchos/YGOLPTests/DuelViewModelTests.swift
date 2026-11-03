@@ -5,10 +5,24 @@ import Testing
 @MainActor
 final class FakeSound: SoundPlaying {
     var isMuted = false
+    /// Leaves voice clips "playing" until `finishVoice()`. Like the real player,
+    /// a later voice clip drops the pending completion.
+    var holdsVoiceClips = false
     private(set) var played: [Sound] = []
+    private var pendingCompletion: (@MainActor () -> Void)?
 
     func play(_ sound: Sound, completion: (@MainActor () -> Void)?) {
         if !isMuted { played.append(sound) }
+        if holdsVoiceClips && !isMuted && sound.isVoice {
+            pendingCompletion = completion
+        } else {
+            completion?()
+        }
+    }
+
+    func finishVoice() {
+        let completion = pendingCompletion
+        pendingCompletion = nil
         completion?()
     }
 }
@@ -85,6 +99,34 @@ struct DuelViewModelTests {
         for player in Player.allCases {
             #expect(duel.displayedLifePoints(for: player) == LifePoints.starting)
         }
+    }
+
+    @Test func bonusClipCannotInterruptDuelStart() async {
+        save(p1: 300, p2: 300)
+        sound.holdsVoiceClips = true
+        let duel = makeDuel()
+
+        duel.restart()
+        #expect(duel.isStartingDuel)
+        duel.playItsTimeToDuel()
+        #expect(sound.played == [.duelStart])
+
+        sound.finishVoice()
+        await duel.finishAnimations()
+        #expect(!duel.isStartingDuel)
+        #expect(duel.displayedLifePoints(for: .one) == LifePoints.starting)
+        #expect(duel.displayedLifePoints(for: .two) == LifePoints.starting)
+    }
+
+    @Test func restartSavesStartingLifePointsBeforeClipEnds() {
+        save(p1: 300, p2: 500)
+        sound.holdsVoiceClips = true
+        let duel = makeDuel()
+
+        duel.restart()
+        #expect(duel.lifePoints(for: .one) == 0)
+        #expect(defaults.integer(forKey: DuelViewModel.StorageKey.lifePointsP1) == LifePoints.starting)
+        #expect(defaults.integer(forKey: DuelViewModel.StorageKey.lifePointsP2) == LifePoints.starting)
     }
 
     @Test func toggleMutePersists() {

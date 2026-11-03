@@ -19,6 +19,8 @@ final class DuelViewModel {
     private(set) var lifePoints: [Player: Int] = [.one: 0, .two: 0]
     private(set) var displayedLifePoints: [Player: Int] = [.one: 0, .two: 0]
     private(set) var isMuted: Bool
+    /// A clip leading into a fresh duel is playing; the count-up starts when it ends.
+    private(set) var isStartingDuel = false
 
     @ObservationIgnored private let defaults: UserDefaults
     @ObservationIgnored private let sound: any SoundPlaying
@@ -58,6 +60,7 @@ final class DuelViewModel {
             restart()
             return
         }
+        isStartingDuel = true
         sound.play(.itsTimeToDuel) { [weak self] in self?.restart() }
     }
 
@@ -65,16 +68,21 @@ final class DuelViewModel {
     func restart() {
         for player in Player.allCases {
             animations[player]?.cancel()
-            setLifePoints(0, for: player)
+            lifePoints[player] = 0
             displayedLifePoints[player] = 0
+            // Saved up front so quitting during the clip still lands on a fresh duel.
+            defaults.set(LifePoints.starting, forKey: StorageKey.lifePoints(player))
         }
 
         if isMuted {
+            isStartingDuel = false
             for player in Player.allCases {
                 changeLifePoints(to: LifePoints.starting, for: player, animated: false, force: true)
             }
         } else {
+            isStartingDuel = true
             sound.play(.duelStart) { [weak self] in
+                self?.isStartingDuel = false
                 for player in Player.allCases {
                     self?.changeLifePoints(to: LifePoints.starting, for: player, force: true)
                 }
@@ -83,7 +91,8 @@ final class DuelViewModel {
     }
 
     func playItsTimeToDuel() {
-        guard !isMuted else { return }
+        // Another voice clip would cancel the one that starts the duel.
+        guard !isMuted, !isStartingDuel else { return }
         sound.play(.itsTimeToDuel)
     }
 

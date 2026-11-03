@@ -65,7 +65,7 @@ struct LifePointsScreen: View {
         }
         .confirmationDialog("Duel", isPresented: $showingDuelMenu, titleVisibility: .hidden) {
             Button("Restart Duel", role: .destructive) { duel.restart() }
-            if !duel.isMuted {
+            if !duel.isMuted && !duel.isStartingDuel {
                 Button("It's Time to Duel!") { duel.playItsTimeToDuel() }
             }
             Button("Cancel", role: .cancel) {}

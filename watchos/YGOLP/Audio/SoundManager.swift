@@ -22,15 +22,29 @@ extension SoundPlaying {
 }
 
 @MainActor
-final class SoundManager: NSObject, SoundPlaying {
-    var isMuted = false
+final class SoundManager: SoundPlaying {
+    var isMuted = false {
+        didSet {
+            // Muting cuts off a clip in progress; its completion still runs.
+            if isMuted, let activeVoice {
+                activeVoice.player.stop()
+                voiceDidFinish(activeVoice.generation)
+            }
+        }
+    }
+
+    private struct ActiveVoice {
+        let player: AVAudioPlayer
+        let delegate: VoiceDelegate
+        let generation: Int
+        let completion: (@MainActor () -> Void)?
+    }
 
     private var players: [Sound: AVAudioPlayer] = [:]
-    private var activeVoice: AVAudioPlayer?
-    private var activeVoiceCompletion: (@MainActor () -> Void)?
+    private var activeVoice: ActiveVoice?
+    private var voiceGeneration = 0
 
-    override init() {
-        super.init()
+    init() {
         try? AVAudioSession.sharedInstance().setCategory(.ambient)
         player(for: .lifePointsChange)?.prepareToPlay()
     }
@@ -49,12 +63,21 @@ final class SoundManager: NSObject, SoundPlaying {
         }
 
         // Stop any voice clip in progress; its completion is dropped.
-        activeVoice?.stop()
-        activeVoice = player
-        activeVoiceCompletion = completion
+        activeVoice?.player.stop()
+
+        // Players are cached, so a generation tells a replay of the same clip
+        // apart from a finish callback still queued for the previous play.
+        voiceGeneration += 1
+        let generation = voiceGeneration
+        let delegate = VoiceDelegate { [weak self] in
+            Task { @MainActor in self?.voiceDidFinish(generation) }
+        }
+        player.delegate = delegate
+        activeVoice = ActiveVoice(player: player, delegate: delegate, generation: generation, completion: completion)
+
         player.currentTime = 0
         if !player.play() {
-            voiceDidFinish(ObjectIdentifier(player))
+            voiceDidFinish(generation)
         }
     }
 
@@ -63,28 +86,29 @@ final class SoundManager: NSObject, SoundPlaying {
         if let player = players[sound] { return player }
         guard let url = Bundle.main.url(forResource: sound.rawValue, withExtension: "mp3"),
               let player = try? AVAudioPlayer(contentsOf: url) else { return nil }
-        player.delegate = self
         players[sound] = player
         return player
     }
 
-    private func voiceDidFinish(_ id: ObjectIdentifier) {
-        guard let activeVoice, ObjectIdentifier(activeVoice) == id else { return }
-        let completion = activeVoiceCompletion
-        self.activeVoice = nil
-        activeVoiceCompletion = nil
-        completion?()
+    private func voiceDidFinish(_ generation: Int) {
+        guard let voice = activeVoice, voice.generation == generation else { return }
+        activeVoice = nil
+        voice.completion?()
     }
 }
 
-extension SoundManager: AVAudioPlayerDelegate {
-    nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
-        let id = ObjectIdentifier(player)
-        Task { @MainActor in self.voiceDidFinish(id) }
+private final class VoiceDelegate: NSObject, AVAudioPlayerDelegate {
+    private let onFinish: @Sendable () -> Void
+
+    init(onFinish: @escaping @Sendable () -> Void) {
+        self.onFinish = onFinish
     }
 
-    nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: (any Error)?) {
-        let id = ObjectIdentifier(player)
-        Task { @MainActor in self.voiceDidFinish(id) }
+    func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        onFinish()
+    }
+
+    func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: (any Error)?) {
+        onFinish()
     }
 }
