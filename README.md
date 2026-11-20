@@ -1,14 +1,14 @@
 # YGOLP
 
-**Yu-Gi-Oh! LifePoints (LP) Tracker/Calculator for Wear OS**
+**Yu-Gi-Oh! LifePoints (LP) Tracker/Calculator for Wear OS and Apple Watch**
 
-YGOLP is a simple and intuitive Life Points tracker and calculator designed specifically for Yu-Gi-Oh! players using Wear OS smartwatches. It allows duelists to quickly manage and calculate Life Points during games, making dueling more convenient and accessible on the go.
+YGOLP is a simple and intuitive Life Points tracker and calculator designed specifically for Yu-Gi-Oh! players using Wear OS smartwatches and Apple Watch. It allows duelists to quickly manage and calculate Life Points during games, making dueling more convenient and accessible on the go.
 
 ## Features
 
 - Quick and easy Life Points adjustment for both players
 - Clean, minimal interface optimized for small screens
-- Designed for Wear OS smartwatches
+- Designed for Wear OS smartwatches and Apple Watch
 
 ## Installation
 
@@ -34,6 +34,31 @@ The C button is backspace, and the X button cancels.
 The submit button will apply the calculation with the number you have input.
 
 There's also a bonus audio clip if your watch has physical multifunction button(s)!
+
+### Apple Watch
+
+The Apple Watch app works the same way, with a few watchOS-specific touches:
+
+- The mute toggle sits in the top-left corner.
+- The ⟲ button in the top-right corner opens the duel menu, where you can restart the duel or play the bonus "It's time to duel!" clip (Apple Watch buttons can't be used by apps).
+- In the calculator, the system ✕ in the top-left corner discards, just like the X key.
+
+## Apple Watch Development
+
+The watchOS app lives in [`watchos/`](watchos) and is a native SwiftUI, watch-only app (watchOS 10+). It reuses the sounds, font, and background image from the Android app's `res/` folder, so there is a single copy of each asset.
+
+```sh
+open watchos/YGOLP.xcodeproj
+```
+
+Pick the `YGOLP` scheme and an Apple Watch simulator, then run. To build for a device or submit to the App Store, set your development team under *Signing & Capabilities*.
+
+Run the unit and UI tests from the command line with:
+
+```sh
+xcodebuild test -project watchos/YGOLP.xcodeproj -scheme YGOLP \
+  -destination 'platform=watchOS Simulator,name=Apple Watch Series 11 (46mm)'
+```
 
 ## Contributing
 
